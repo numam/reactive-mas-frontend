@@ -1,217 +1,179 @@
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext";
 
-// ── Icon helpers ──────────────────────────────────────────
-const IconDashboard = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-  </svg>
-);
-const IconInventory = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-  </svg>
-);
-const IconSuppliers = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-);
-const IconReports = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-  </svg>
-);
-const IconSimulation = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-const IconChevronDown = ({ open }) => (
-  <svg
-    className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-    fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-  </svg>
-);
-
-// ── Flat menu items ───────────────────────────────────────
-const flatItems = [
-  { path: "/", label: "Dashboard", icon: <IconDashboard /> },
-  { path: "/inventory", label: "Inventory", icon: <IconInventory /> },
-  { path: "/suppliers", label: "Suppliers", icon: <IconSuppliers /> },
+// ── Nav items ─────────────────────────────────────────────
+const navItems = [
+  { path: "/", label: "Dashboard", end: true },
+  { path: "/inventory", label: "Inventory" },
+  { path: "/suppliers", label: "Suppliers" },
+  { path: "/simulation", label: "Simulation" },
+  { path: "/reports", label: "Reports" },
 ];
 
-// ── Accordion groups ──────────────────────────────────────
-const accordionGroups = [
-  {
-    key: "simulation",
-    label: "Simulation",
-    icon: <IconSimulation />,
-    children: [
-      { path: "/simulation", label: "Basic" },
-      { path: "/simulation/hitl", label: "HitL" },
-    ],
-  },
-  {
-    key: "reports",
-    label: "Reports",
-    icon: <IconReports />,
-    children: [
-      { path: "/reports", label: "Basic" },
-      { path: "/reports/hitl", label: "HitL" },
-    ],
-  },
-];
+// ── Hamburger icon ────────────────────────────────────────
+const IconMenu = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+);
+const IconClose = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
 
-// ── NavLink item ──────────────────────────────────────────
-function MenuItem({ path, label, icon, end, indent = false }) {
+// ── Shared NavLink class helper ───────────────────────────
+function navLinkClass({ isActive }) {
+  return `text-sm font-medium transition-colors duration-150 px-1 py-0.5 rounded ${
+    isActive
+      ? "text-violet-600 dark:text-violet-400"
+      : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+  }`;
+}
+
+// ── Mobile NavLink (pill style) ───────────────────────────
+function mobileNavLinkClass({ isActive }) {
+  return `block w-full text-left px-4 py-3 text-sm font-medium rounded-xl transition-colors duration-150 ${
+    isActive
+      ? "bg-violet-50 dark:bg-violet-950 text-violet-700 dark:text-violet-400"
+      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
+  }`;
+}
+
+// ── Topbar / Navbar ───────────────────────────────────────
+export default function Sidebar() {
+  const { dark, toggle } = useTheme();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <NavLink
-      to={path}
-      end={end ?? path === "/"}
-      className={({ isActive }) =>
-        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group ${
-          indent ? "ml-6 py-2" : ""
-        } ${
-          isActive
-            ? "bg-violet-50 dark:bg-violet-950 text-violet-700 dark:text-violet-400"
-            : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
-        }`
-      }
-    >
-      {({ isActive }) => (
+    <>
+      {/* ── Main navbar ── */}
+      <header className="fixed top-0 inset-x-0 h-16 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 z-30 transition-colors duration-200">
+        <div className="max-w-screen-2xl mx-auto h-full flex items-center justify-between gap-4 px-4 sm:px-6">
+
+          {/* Logo */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
+              <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div className="leading-none">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">SupplyChain</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">MAS Dashboard</p>
+            </div>
+          </div>
+
+          {/* ── Desktop nav links ── */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.end}
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                    isActive
+                      ? "bg-violet-50 dark:bg-violet-950 text-violet-700 dark:text-violet-400"
+                      : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+
+          {/* ── Right actions ── */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Dark mode toggle */}
+            <button
+              onClick={toggle}
+              aria-label="Toggle dark mode"
+              className={`cursor-pointer relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
+                dark ? "bg-violet-600" : "bg-gray-200"
+              }`}
+            >
+              {/* Moon icon — left side */}
+              <span className="absolute left-1.5 top-1/2 -translate-y-1/2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-white">
+                  <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clipRule="evenodd" />
+                </svg>
+              </span>
+              {/* Sun icon — right side */}
+              <span className="absolute right-1.5 top-1/2 -translate-y-1/2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-400">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                </svg>
+              </span>
+              {/* Thumb: light → covers moon (left), dark → covers sun (right) */}
+              <span
+                className={`absolute top-0.5 left-0 w-6 h-6 rounded-full bg-white shadow-sm transition-transform duration-300 ${
+                  dark ? "translate-x-7.5" : "translate-x-0.5"
+                }`}
+              />
+            </button>
+
+            {/* Notification */}
+            <button className="hidden sm:flex relative w-9 h-9 items-center justify-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-900" />
+            </button>
+
+            {/* Avatar */}
+            <div className="hidden sm:flex w-9 h-9 rounded-full bg-linear-to-br from-violet-400 to-purple-600 items-center justify-center cursor-pointer shrink-0">
+              <span className="text-white text-xs font-semibold">AD</span>
+            </div>
+
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileOpen((o) => !o)}
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? <IconClose /> : <IconMenu />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Mobile dropdown menu ── */}
+      {mobileOpen && (
         <>
-          {icon && (
-            <span className={`shrink-0 transition-colors ${
-              isActive
-                ? "text-violet-600 dark:text-violet-400"
-                : "text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300"
-            }`}>
-              {icon}
-            </span>
-          )}
-          {indent && !icon && (
-            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? "bg-violet-500" : "bg-gray-300 dark:bg-gray-600"}`} />
-          )}
-          <span>{label}</span>
-          {isActive && !indent && (
-            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-violet-500 dark:bg-violet-400" />
-          )}
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-20 bg-black/20 dark:bg-black/40 md:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+          {/* Menu panel */}
+          <div className="fixed top-16 inset-x-0 z-20 md:hidden bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-lg p-3 space-y-1">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.end}
+                onClick={() => setMobileOpen(false)}
+                className={mobileNavLinkClass}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+            {/* Mobile-only avatar row */}
+            <div className="pt-2 mt-2 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3 px-4 py-2">
+              <div className="w-8 h-8 rounded-full bg-linear-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0">
+                <span className="text-white text-xs font-semibold">AD</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Admin User</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">admin@supply.com</p>
+              </div>
+            </div>
+          </div>
         </>
       )}
-    </NavLink>
-  );
-}
-
-// ── Accordion group ───────────────────────────────────────
-function AccordionGroup({ group }) {
-  const location = useLocation();
-
-  // Auto-open if current path matches a child
-  const isChildActive = group.children.some((c) => location.pathname === c.path);
-  const [open, setOpen] = useState(isChildActive);
-
-  return (
-    <div>
-      {/* Group header button */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group ${
-          isChildActive
-            ? "bg-violet-50 dark:bg-violet-950 text-violet-700 dark:text-violet-400"
-            : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
-        }`}
-      >
-        <span className={`shrink-0 transition-colors ${
-          isChildActive
-            ? "text-violet-600 dark:text-violet-400"
-            : "text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300"
-        }`}>
-          {group.icon}
-        </span>
-        <span className="flex-1 text-left">{group.label}</span>
-        <span className={`transition-colors ${isChildActive ? "text-violet-400 dark:text-violet-500" : "text-gray-300 dark:text-gray-600"}`}>
-          <IconChevronDown open={open} />
-        </span>
-      </button>
-
-      {/* Children */}
-      {open && (
-        <div className="mt-0.5 space-y-0.5">
-          {group.children.map((child) => (
-            <MenuItem
-              key={child.path}
-              path={child.path}
-              label={child.label}
-              indent
-              end
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Sidebar ───────────────────────────────────────────────
-export default function Sidebar() {
-  return (
-    <aside className="fixed top-0 left-0 h-screen w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col z-30 shadow-sm transition-colors duration-200">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-100 dark:border-gray-800">
-        <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center">
-          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-none">SupplyChain</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">MAS Dashboard</p>
-        </div>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-600 uppercase tracking-widest px-3 mb-2">
-          Main Menu
-        </p>
-
-        {/* Flat items */}
-        {flatItems.map((item) => (
-          <MenuItem key={item.path} path={item.path} label={item.label} icon={item.icon} />
-        ))}
-
-        {/* Divider */}
-        <div className="pt-2 pb-1">
-          <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-600 uppercase tracking-widest px-3">
-            Analysis
-          </p>
-        </div>
-
-        {/* Accordion groups */}
-        {accordionGroups.map((group) => (
-          <AccordionGroup key={group.key} group={group} />
-        ))}
-      </nav>
-
-      {/* User profile */}
-      <div className="px-4 py-4 border-t border-gray-100 dark:border-gray-800">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
-          <div className="w-8 h-8 rounded-full bg-linear-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0">
-            <span className="text-white text-xs font-semibold">AD</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">Admin User</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 truncate">admin@supply.com</p>
-          </div>
-          <svg className="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-          </svg>
-        </div>
-      </div>
-    </aside>
+    </>
   );
 }

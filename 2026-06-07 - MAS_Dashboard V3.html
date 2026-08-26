@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HALMAS · Halal Supply Chain Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0B0F1A; --ink2:#141926; --ink3:#1C2333;
+  --panel:#1E2538; --panel2:#252D42; --panel3:#2D374F;
+  --rim:rgba(255,255,255,.07); --rim2:rgba(255,255,255,.13);
+  --gold:#C9A84C; --gold-l:#E8C96A; --gold-bg:rgba(201,168,76,.10); --gold-r:rgba(201,168,76,.25);
+  --teal:#2DD4BF; --teal-bg:rgba(45,212,191,.08); --teal-r:rgba(45,212,191,.22);
+  --blue:#60A5FA; --blue-bg:rgba(96,165,250,.08); --blue-r:rgba(96,165,250,.22);
+  --amber:#FBBF24; --amb-bg:rgba(251,191,36,.08); --amb-r:rgba(251,191,36,.22);
+  --red:#F87171; --red-bg:rgba(248,113,113,.08); --red-r:rgba(248,113,113,.22);
+  --green:#4ADE80; --grn-bg:rgba(74,222,128,.08); --grn-r:rgba(74,222,128,.22);
+  --purple:#A78BFA; --pur-bg:rgba(167,139,250,.08); --pur-r:rgba(167,139,250,.22);
+  --text:#E8EDF5; --text2:#9BA8BF; --text3:#5C6B87;
+  --r:6px; --r-lg:10px; --sb:252px; --hh:50px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"DM Sans",sans-serif;background:var(--ink);color:var(--text);
+  font-size:13px;line-height:1.5;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--panel3);border-radius:2px}
+
+/* HEADER */
+#hdr{height:var(--hh);background:var(--ink2);border-bottom:1px solid var(--rim);
+  display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;position:relative}
+#hdr::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--teal),transparent)}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-box{width:28px;height:28px;background:var(--gold-bg);border:1px solid var(--gold-r);
+  border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:15px}
+.logo-name{font-family:"Space Mono",monospace;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--gold-l)}
+.logo-sub{font-size:9px;color:var(--text3)}
+.hsep{width:1px;height:22px;background:var(--rim)}
+.hstat{display:flex;flex-direction:column;align-items:center;min-width:44px}
+.hstat-v{font-family:"Space Mono",monospace;font-size:13px;font-weight:700;color:var(--text);line-height:1}
+.hstat-l{font-size:8.5px;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-top:1px}
+.spill{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:14px;
+  border:1px solid;font-size:10px;font-weight:500;white-space:nowrap}
+.spill .dot{width:5px;height:5px;border-radius:50%}
+.sp-idle{background:rgba(92,107,135,.12);border-color:var(--rim2);color:var(--text3)}
+.sp-idle .dot{background:var(--text3)}
+.sp-ok{background:var(--grn-bg);border-color:var(--grn-r);color:var(--green)}
+.sp-ok .dot{background:var(--green);animation:blink 1.8s infinite}
+.sp-warn{background:var(--amb-bg);border-color:var(--amb-r);color:var(--amber)}
+.sp-warn .dot{background:var(--amber);animation:blink .8s infinite}
+.sp-crit{background:var(--red-bg);border-color:var(--red-r);color:var(--red)}
+.sp-crit .dot{background:var(--red);animation:blink .5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+#hclock{margin-left:auto;font-family:"Space Mono",monospace;font-size:9.5px;color:var(--text3)}
+
+/* LAYOUT */
+#layout{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+#sb{width:var(--sb);background:var(--ink2);border-right:1px solid var(--rim);
+  display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.sg{padding:11px 13px;border-bottom:1px solid var(--rim)}
+.sg:last-child{border-bottom:none}
+.sgh{display:flex;align-items:center;gap:5px;margin-bottom:9px}
+.sgh-ic{font-size:11px;opacity:.55}
+.sgh-tx{font-size:9px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:var(--text3)}
+.uc{display:flex;align-items:center;gap:7px;padding:6px 8px;border:1px solid var(--rim);
+  border-radius:var(--r);background:var(--panel);cursor:pointer;margin-bottom:4px;transition:all .15s}
+.uc:hover{border-color:var(--gold-r);background:var(--gold-bg)}
+.uc.loaded{border-color:var(--teal-r);background:var(--teal-bg)}
+.uc input{display:none}
+.uc-ic{width:22px;height:22px;border-radius:4px;background:var(--panel2);
+  display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.uc.loaded .uc-ic{background:var(--teal-bg)}
+.uc-nm{font-size:10.5px;font-weight:600;color:var(--text);line-height:1.2}
+.uc-ds{font-size:9px;color:var(--text3)}
+.uc.loaded .uc-ds{color:var(--teal)}
+.uc-ck{margin-left:auto;color:var(--teal);display:none;font-size:12px}
+.uc.loaded .uc-ck{display:block}
+.btn-demo{width:100%;padding:5px;background:var(--gold-bg);border:1px solid var(--gold-r);
+  border-radius:var(--r);color:var(--gold-l);font-size:10.5px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:5px;margin-top:5px;transition:all .15s}
+.btn-demo:hover{background:rgba(201,168,76,.18)}
+.mc{display:flex;align-items:flex-start;gap:7px;padding:7px 8px;border:1px solid var(--rim);
+  border-radius:var(--r);background:var(--panel);cursor:pointer;margin-bottom:4px;transition:all .15s}
+.mc:hover{background:var(--panel2)}
+.mc.active{border-color:var(--gold-r);background:var(--gold-bg)}
+.mc-rb{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--text3);
+  flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mc.active .mc-rb{border-color:var(--gold);background:var(--gold-bg)}
+.mc.active .mc-rb::after{content:"";width:5px;height:5px;background:var(--gold-l);border-radius:50%}
+.mc-tt{font-size:11px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:4px}
+.mc-ds{font-size:9px;color:var(--text3);margin-top:1px;line-height:1.4}
+.mtag{font-size:8px;padding:1px 5px;border-radius:7px;font-weight:600;letter-spacing:.04em}
+.mt-bl{background:rgba(92,107,135,.2);color:var(--text3)}
+.mt-re{background:var(--amb-bg);color:var(--amber);border:1px solid var(--amb-r)}
+.mt-au{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-r)}
+.mt-hi{background:var(--pur-bg);color:var(--purple);border:1px solid var(--pur-r)}
+select{width:100%;padding:5px 8px;background:var(--panel);border:1px solid var(--rim2);
+  border-radius:var(--r);color:var(--text);font-size:11.5px;font-family:"DM Sans",sans-serif;
+  cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2711%27 height=%2711%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%235C6B87%27 stroke-width=%272%27%3E%3Cpath d=%27m6 9 6 6 6-6%27/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;margin-bottom:5px}
+select:focus{outline:none;border-color:var(--gold-r)}
+.sc-info{padding:5px 8px;background:var(--panel);border:1px solid var(--rim);
+  border-radius:var(--r);font-size:9.5px;color:var(--text3);line-height:1.6}
+.spd{display:flex;gap:3px;margin-bottom:7px}
+.spd-btn{flex:1;padding:4px 2px;background:var(--panel);border:1px solid var(--rim);
+  border-radius:var(--r);color:var(--text3);font-size:9.5px;font-weight:600;
+  cursor:pointer;text-align:center;transition:all .12s}
+.spd-btn:hover{background:var(--panel2);color:var(--text)}
+.spd-btn.active{background:var(--teal-bg);border-color:var(--teal-r);color:var(--teal)}
+.cbs{display:grid;grid-template-columns:1fr auto auto;gap:4px}
+.btn{display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;
+  border-radius:var(--r);font-size:11px;font-weight:600;cursor:pointer;border:1px solid;
+  transition:all .12s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.38;cursor:not-allowed}
+.btn-run{background:var(--teal);border-color:var(--teal);color:var(--ink)}
+.btn-run:hover:not(:disabled){background:#5eead4}
+.btn-ic{background:var(--panel2);border-color:var(--rim2);color:var(--text2);padding:6px 9px}
+.btn-ic:hover:not(:disabled){background:var(--panel3)}
+.btn-rst:hover{background:var(--red-bg);border-color:var(--red-r);color:var(--red)}
+.pw{margin-top:7px;display:none}
+.pl{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:2px}
+.pt{height:3px;background:var(--panel3);border-radius:2px;overflow:hidden}
+.pf{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:2px;transition:width .3s}
+.leg-row{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text2);margin-bottom:3px}
+.leg-dot{width:8px;height:8px;border-radius:50%}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:10px;gap:8px}
+
+/* ROW 1: SC MAP + CURRENT STATUS */
+#row1{display:grid;grid-template-columns:1fr 340px;gap:8px;flex-shrink:0}
+
+/* SC Map panel */
+#scwrap{background:var(--panel);border:1px solid var(--rim);border-radius:var(--r-lg);padding:10px 12px}
+.sec-hdr{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.sec-ic{width:20px;height:20px;background:var(--gold-bg);border:1px solid var(--gold-r);
+  border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:11px}
+.sec-tt{font-size:10.5px;font-weight:700;color:var(--text);letter-spacing:.03em}
+.sec-tag{margin-left:auto;font-size:8.5px;padding:2px 7px;border-radius:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+
+/* Tier cards — horizontal strip with threshold details */
+#scmap{display:flex;align-items:flex-start;gap:0}
+.tc-wrap{display:flex;align-items:center;flex:1}
+.tc{flex:1;border-radius:var(--r-lg);border:1px solid var(--rim2);padding:8px 7px 6px;
+  cursor:pointer;transition:all .2s;background:var(--panel2);position:relative;overflow:hidden}
+.tc:hover{transform:translateY(-1px)}
+.tc::after{content:"";position:absolute;top:0;left:0;right:0;height:2px}
+.tc-ok{border-color:var(--teal-r);background:linear-gradient(160deg,var(--panel2),rgba(45,212,191,.03))}
+.tc-ok::after{background:var(--teal)}
+.tc-pot{border-color:var(--amb-r);background:linear-gradient(160deg,var(--panel2),rgba(251,191,36,.03))}
+.tc-pot::after{background:var(--amber)}
+.tc-dis{border-color:var(--red-r);background:linear-gradient(160deg,rgba(248,113,113,.05),var(--panel2));animation:pc 1.1s infinite}
+.tc-dis::after{background:var(--red)}
+@keyframes pc{0%,100%{border-color:var(--red-r)}50%{border-color:var(--red);box-shadow:0 0 8px rgba(248,113,113,.12)}}
+.tc-ic{font-size:18px;margin-bottom:3px;display:block}
+.tc-nm{font-size:9.5px;font-weight:700;color:var(--text);margin-bottom:1px}
+.tc-mv{font-family:"Space Mono",monospace;font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px}
+.tc-sc{font-size:8px;color:var(--text3)}
+.tc-st{font-size:8.5px;font-weight:600;margin-top:3px;display:flex;align-items:center;gap:2px}
+.tc-st::before{content:"";width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.st-ok{color:var(--teal)}.st-ok::before{background:var(--teal)}
+.st-pot{color:var(--amber)}.st-pot::before{background:var(--amber);animation:blink .8s infinite}
+.st-dis{color:var(--red)}.st-dis::before{background:var(--red);animation:blink .5s infinite}
+
+/* Threshold mini-table per tier */
+.tc-thresh{margin-top:5px;border-top:1px solid var(--rim);padding-top:4px}
+.thr-row{display:flex;align-items:center;gap:3px;font-size:8px;margin-bottom:1px;color:var(--text3)}
+.thr-key{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.thr-val{font-family:"Space Mono",monospace;color:var(--text2);font-size:7.5px}
+.thr-ok{color:var(--teal);font-size:9px;flex-shrink:0}
+.thr-warn{color:var(--red);font-size:9px;flex-shrink:0}
+
+/* Flow connector */
+.fc{width:28px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 2px}
+.ft{width:100%;height:3px;background:var(--panel3);border-radius:2px;position:relative;overflow:hidden}
+.ff{height:100%;border-radius:2px;position:absolute;left:0;top:0;transition:width .4s,background .3s}
+.fl-ok .ff{width:100%;background:var(--teal)}
+.fl-rd .ff{width:48%;background:var(--amber)}
+.fl-cr .ff{width:10%;background:var(--red)}
+.fa{font-size:8px;color:var(--text3);margin-top:1px}
+
+/* Current Status Panel */
+#curstat{background:var(--panel);border:1px solid var(--rim);border-radius:var(--r-lg);
+  padding:10px 12px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+
+/* Status blocks */
+.cs-block{background:var(--ink3);border:1px solid var(--rim);border-radius:var(--r);padding:7px 9px}
+.cs-block-title{font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.cs-block-title .dot{width:5px;height:5px;border-radius:50%}
+
+/* Disrupted tiers list */
+.dis-item{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid var(--rim);font-size:10px}
+.dis-item:last-child{border-bottom:none}
+.dis-tier{font-weight:700;color:var(--text);display:flex;align-items:center;gap:4px}
+.dis-reason{color:var(--text3);flex:1;font-size:9px}
+.dis-since{font-family:"Space Mono",monospace;font-size:8.5px;color:var(--amber)}
+
+/* Active rule display */
+.rule-display{display:flex;align-items:center;gap:8px}
+.rule-id-big{font-family:"Space Mono",monospace;font-size:22px;font-weight:700;color:var(--blue)}
+.rule-info{flex:1}
+.rule-pat-disp{font-family:"Space Mono",monospace;font-size:10px;color:var(--text2);margin-bottom:2px}
+.rule-lbl-disp{font-size:10px;color:var(--text);font-weight:600;margin-bottom:2px}
+.rule-urg-disp{font-size:8.5px;padding:1px 5px;border-radius:6px;font-weight:700;display:inline-block}
+.ru-n{background:var(--grn-bg);color:var(--green)}
+.ru-h{background:var(--amb-bg);color:var(--amber)}
+.ru-c{background:var(--red-bg);color:var(--red)}
+
+/* Actions list */
+.act-item{display:flex;gap:6px;padding:3px 0;border-bottom:1px solid var(--rim);font-size:9.5px}
+.act-item:last-child{border-bottom:none}
+.act-arrow{color:var(--teal);flex-shrink:0;font-weight:700}
+.act-tier{font-weight:700;color:var(--text);min-width:70px}
+.act-instr{color:var(--text3);flex:1}
+.act-badge{font-size:8px;padding:1px 5px;border-radius:6px;font-weight:700;margin-left:auto;flex-shrink:0}
+.ab-acc{background:var(--grn-bg);color:var(--green)}
+.ab-mod{background:var(--amb-bg);color:var(--amber)}
+.ab-ov{background:var(--red-bg);color:var(--red)}
+.ab-to{background:var(--panel3);color:var(--text3)}
+.ab-auto{background:var(--blue-bg);color:var(--blue)}
+
+/* Empty state */
+.cs-empty{font-size:9.5px;color:var(--text3);text-align:center;padding:6px 0}
+
+/* ROW 2: LOG VIEWER */
+#row2{flex:1;background:var(--panel);border:1px solid var(--rim);border-radius:var(--r-lg);
+  display:flex;flex-direction:column;overflow:hidden;min-height:0}
+
+/* Tab bar */
+#tabs{display:flex;gap:1px;border-bottom:1px solid var(--rim);flex-shrink:0;
+  background:var(--ink3);padding:0 8px}
+.tab{padding:7px 12px;font-size:10.5px;font-weight:600;cursor:pointer;
+  color:var(--text3);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--text);border-bottom-color:var(--gold-l)}
+.tab .tab-dot{width:5px;height:5px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
+
+/* Log content */
+#log-content{flex:1;overflow-y:auto;padding:0}
+
+/* Log entry */
+.log-entry{border-bottom:1px solid var(--rim);padding:8px 12px}
+.log-entry:last-child{border-bottom:none}
+.log-entry:hover{background:var(--ink3)}
+
+.le-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.le-time{font-family:"Space Mono",monospace;font-size:9.5px;color:var(--text3);min-width:42px}
+.le-tag{font-size:9px;padding:1px 6px;border-radius:6px;font-weight:700;letter-spacing:.04em;flex-shrink:0}
+.lt-scan{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-r)}
+.lt-disrupt{background:var(--red-bg);color:var(--red);border:1px solid var(--red-r)}
+.lt-recover{background:var(--grn-bg);color:var(--green);border:1px solid var(--grn-r)}
+.lt-signal{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-r)}
+.lt-rule{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-r)}
+.lt-action{background:var(--amb-bg);color:var(--amber);border:1px solid var(--amb-r)}
+.lt-hitl{background:var(--pur-bg);color:var(--purple);border:1px solid var(--pur-r)}
+.lt-coord{background:var(--gold-bg);color:var(--gold-l);border:1px solid var(--gold-r)}
+
+.le-title{font-size:11px;font-weight:700;color:var(--text)}
+.le-body{font-size:10px;color:var(--text2);line-height:1.6}
+
+/* Log sub-rows */
+.log-sub{display:flex;gap:6px;margin-top:2px}
+.log-sub-key{font-size:9.5px;color:var(--text3);min-width:110px;flex-shrink:0}
+.log-sub-val{font-size:9.5px;color:var(--text2);flex:1}
+.log-sub-val.mono{font-family:"Space Mono",monospace;font-size:9px}
+.check-ok{color:var(--teal)} .check-fail{color:var(--red)}
+
+/* Threshold table in log */
+.thr-table{width:100%;border-collapse:collapse;margin-top:4px}
+.thr-table th{font-size:8.5px;color:var(--text3);font-weight:600;padding:2px 6px;
+  text-align:left;border-bottom:1px solid var(--rim)}
+.thr-table td{font-size:9px;padding:2px 6px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text2)}
+.thr-table tr:last-child td{border-bottom:none}
+.thr-table .v-ok{color:var(--teal);font-family:"Space Mono",monospace}
+.thr-table .v-fail{color:var(--red);font-family:"Space Mono",monospace;font-weight:700}
+.thr-table .status-ok{color:var(--teal);font-weight:700}
+.thr-table .status-fail{color:var(--red);font-weight:700}
+
+/* Action dispatch table */
+.act-table{width:100%;border-collapse:collapse;margin-top:4px}
+.act-table th{font-size:8.5px;color:var(--text3);font-weight:600;padding:2px 6px;text-align:left;border-bottom:1px solid var(--rim)}
+.act-table td{font-size:9px;padding:2px 6px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text2)}
+.act-table tr:last-child td{border-bottom:none}
+
+/* HitL detailed entry */
+.hitl-detail{background:var(--panel2);border-radius:var(--r);padding:7px 9px;margin-top:4px}
+.hitl-dec-row{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.hitl-dec-badge{font-size:9px;padding:2px 7px;border-radius:7px;font-weight:700}
+.hdb-acc{background:var(--grn-bg);color:var(--green);border:1px solid var(--grn-r)}
+.hdb-mod{background:var(--amb-bg);color:var(--amber);border:1px solid var(--amb-r)}
+.hdb-ov{background:var(--red-bg);color:var(--red);border:1px solid var(--red-r)}
+.hdb-to{background:var(--panel3);color:var(--text3);border:1px solid var(--rim)}
+.hitl-exp{font-size:9px;color:var(--text3);font-style:italic;line-height:1.4}
+.hitl-meta{display:flex;gap:12px;margin-top:4px;font-size:9px;color:var(--text3)}
+.hitl-meta .mv{font-family:"Space Mono",monospace;color:var(--text2);font-weight:700}
+
+.empty-log{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;color:var(--text3);font-size:11px;gap:6px;text-align:center;padding:16px;opacity:.6}
+.empty-log-ic{font-size:24px;opacity:.4}
+
+/* ══ LOG REDESIGN ══════════════════════════════════════════ */
+
+/* Timeline connector */
+#log-content { padding: 0 12px 12px; }
+
+.log-section { margin-bottom: 4px; }
+
+/* Phase banner */
+.phase-banner {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 6px; margin: 10px 0 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+}
+.pb-start  { background: var(--teal-bg);  color: var(--teal);  border: 1px solid var(--teal-r); }
+.pb-onset  { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-r); }
+.pb-active { background: var(--amb-bg);   color: var(--amber); border: 1px solid var(--amb-r); }
+.pb-recover{ background: var(--grn-bg);   color: var(--green); border: 1px solid var(--grn-r); }
+.pb-done   { background: var(--blue-bg);  color: var(--blue);  border: 1px solid var(--blue-r); }
+
+/* Log card */
+.lc {
+  background: var(--panel2); border: 1px solid var(--rim);
+  border-radius: 8px; margin-bottom: 6px; overflow: hidden;
+  transition: border-color .15s;
+}
+.lc:hover { border-color: var(--rim2); }
+
+/* Left accent bar */
+.lc-acc { width: 3px; flex-shrink: 0; border-radius: 3px 0 0 3px; }
+
+.lc-inner { display: flex; gap: 0; }
+.lc-body  { flex: 1; padding: 9px 11px; }
+
+/* Card header */
+.lc-head {
+  display: flex; align-items: center; gap: 7px; margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.lc-time {
+  font-family: 'Space Mono', monospace; font-size: 9.5px;
+  color: var(--text3); min-width: 44px;
+}
+.lc-badge {
+  font-size: 8.5px; padding: 2px 7px; border-radius: 6px;
+  font-weight: 700; letter-spacing: .05em;
+}
+.lb-threshold { background: var(--red-bg);  color: var(--red);    border: 1px solid var(--red-r); }
+.lb-signal    { background: var(--teal-bg); color: var(--teal);   border: 1px solid var(--teal-r); }
+.lb-rule      { background: var(--blue-bg); color: var(--blue);   border: 1px solid var(--blue-r); }
+.lb-action    { background: var(--amb-bg);  color: var(--amber);  border: 1px solid var(--amb-r); }
+.lb-hitl      { background: var(--pur-bg);  color: var(--purple); border: 1px solid var(--pur-r); }
+.lb-recovery  { background: var(--grn-bg);  color: var(--green);  border: 1px solid var(--grn-r); }
+.lb-summary   { background: var(--gold-bg); color: var(--gold-l); border: 1px solid var(--gold-r); }
+.lb-coord     { background: var(--gold-bg); color: var(--gold-l); border: 1px solid var(--gold-r); }
+
+.lc-title {
+  font-size: 11px; font-weight: 700; color: var(--text); flex: 1;
+}
+
+/* Narrative paragraph */
+.lc-narrative {
+  font-size: 10.5px; color: var(--text2); line-height: 1.7;
+  margin-bottom: 6px; border-left: 2px solid var(--rim2);
+  padding-left: 9px;
+}
+.lc-narrative strong { color: var(--text); font-weight: 600; }
+.lc-narrative .hi-red    { color: var(--red);    font-weight: 600; }
+.lc-narrative .hi-green  { color: var(--green);  font-weight: 600; }
+.lc-narrative .hi-amber  { color: var(--amber);  font-weight: 600; }
+.lc-narrative .hi-blue   { color: var(--blue);   font-weight: 600; }
+.lc-narrative .hi-teal   { color: var(--teal);   font-weight: 600; }
+.lc-narrative .hi-gold   { color: var(--gold-l); font-weight: 600; }
+.lc-narrative .hi-purple { color: var(--purple); font-weight: 600; }
+.lc-narrative .mono      { font-family: 'Space Mono', monospace; font-size: 9.5px; }
+
+/* Detail table */
+.lc-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 9.5px; margin-top: 4px;
+}
+.lc-table th {
+  text-align: left; padding: 3px 8px; color: var(--text3);
+  font-weight: 600; font-size: 8.5px; letter-spacing: .05em;
+  text-transform: uppercase; border-bottom: 1px solid var(--rim);
+  background: var(--ink3);
+}
+.lc-table td {
+  padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,.03);
+  color: var(--text2); vertical-align: middle;
+}
+.lc-table tr:last-child td { border-bottom: none; }
+.lc-table tr:hover td { background: rgba(255,255,255,.02); }
+
+.td-ok   { color: var(--teal);  font-weight: 700; }
+.td-fail { color: var(--red);   font-weight: 700; }
+.td-mono { font-family: 'Space Mono', monospace; font-size: 9px; }
+.td-val-fail { color: var(--red); font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; }
+.td-val-ok   { color: var(--teal); font-family: 'Space Mono', monospace; font-size: 9px; }
+
+/* Action chips */
+.action-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.achip {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 5px; font-size: 9.5px;
+  background: var(--ink3); border: 1px solid var(--rim);
+}
+.achip .tier-ic { font-size: 12px; }
+.achip .tier-nm { color: var(--text2); font-weight: 600; }
+.achip .tier-dec { font-size: 8.5px; padding: 1px 5px; border-radius: 4px; font-weight: 700; margin-left: 3px; }
+.td-acc { background: var(--grn-bg); color: var(--green); }
+.td-mod { background: var(--amb-bg); color: var(--amber); }
+.td-ov  { background: var(--red-bg); color: var(--red); }
+.td-to  { background: var(--panel3); color: var(--text3); }
+.td-auto{ background: var(--blue-bg); color: var(--blue); }
+
+/* HitL decision card */
+.hitl-card {
+  background: var(--ink3); border-radius: 6px; padding: 8px 10px;
+  margin-top: 5px; border: 1px solid var(--pur-r);
+}
+.hitl-card-head {
+  display: flex; align-items: center; gap: 7px; margin-bottom: 5px;
+}
+.hitl-dec-pill {
+  font-size: 9px; padding: 2px 8px; border-radius: 6px; font-weight: 700;
+}
+.hp-acc { background: var(--grn-bg); color: var(--green); border: 1px solid var(--grn-r); }
+.hp-mod { background: var(--amb-bg); color: var(--amber); border: 1px solid var(--amb-r); }
+.hp-ov  { background: var(--red-bg); color: var(--red);   border: 1px solid var(--red-r); }
+.hp-to  { background: var(--panel3); color: var(--text3); border: 1px solid var(--rim); }
+.hitl-explain {
+  font-size: 10px; color: var(--text2); line-height: 1.6;
+  border-left: 2px solid var(--pur-r); padding-left: 8px; margin-top: 4px;
+}
+.hitl-metrics {
+  display: flex; gap: 14px; margin-top: 5px; font-size: 9px; color: var(--text3);
+}
+.hitl-metrics .mv { font-family: 'Space Mono', monospace; color: var(--text2); font-weight: 700; }
+
+/* ── SUMMARY CARD ─────────────────────────────────────── */
+.summary-card {
+  background: var(--ink2); border: 1px solid var(--gold-r);
+  border-radius: 10px; overflow: hidden; margin-bottom: 8px;
+}
+.summary-header {
+  background: linear-gradient(90deg, var(--gold-bg), transparent);
+  border-bottom: 1px solid var(--gold-r);
+  padding: 10px 14px; display: flex; align-items: center; gap: 9px;
+}
+.summary-ic { font-size: 20px; }
+.summary-title { font-size: 13px; font-weight: 700; color: var(--gold-l); }
+.summary-subtitle { font-size: 10px; color: var(--text3); margin-top: 1px; }
+.summary-body { padding: 12px 14px; }
+
+/* Summary timeline */
+.sum-timeline { margin-bottom: 12px; }
+.sum-tl-title {
+  font-size: 9px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 8px;
+}
+.stl-item {
+  display: flex; gap: 10px; margin-bottom: 6px; align-items: flex-start;
+}
+.stl-dot-col { display: flex; flex-direction: column; align-items: center; width: 20px; flex-shrink: 0; }
+.stl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.stl-line { width: 2px; flex: 1; background: var(--rim); margin: 3px 0; min-height: 10px; }
+.stl-content { flex: 1; padding-bottom: 4px; }
+.stl-time { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--text3); margin-bottom: 1px; }
+.stl-event { font-size: 10.5px; font-weight: 600; color: var(--text); }
+.stl-detail { font-size: 9.5px; color: var(--text3); margin-top: 1px; line-height: 1.5; }
+
+/* Summary metrics grid */
+.sum-metrics {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px;
+}
+.sm-tile {
+  background: var(--panel2); border: 1px solid var(--rim);
+  border-radius: 6px; padding: 7px 9px; text-align: center;
+}
+.sm-val { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: var(--text); }
+.sm-lbl { font-size: 8.5px; color: var(--text3); margin-top: 2px; }
+.sm-delta { font-size: 9px; font-weight: 600; margin-top: 1px; }
+
+/* Summary narrative */
+.sum-narrative {
+  font-size: 10.5px; color: var(--text2); line-height: 1.75;
+  background: var(--ink3); border-radius: 6px; padding: 9px 11px;
+  border-left: 3px solid var(--gold-r); margin-top: 8px;
+}
+.sum-narrative strong { color: var(--text); }
+.sum-narrative .hi-ok  { color: var(--green); font-weight: 600; }
+.sum-narrative .hi-bad { color: var(--red);   font-weight: 600; }
+.sum-narrative .hi-key { color: var(--gold-l);font-weight: 600; }
+
+/* Rule flow diagram (text) */
+.rule-flow {
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+  margin: 5px 0; padding: 6px 9px;
+  background: var(--ink3); border-radius: 5px; font-size: 10px;
+}
+.rf-node {
+  padding: 3px 8px; border-radius: 4px; font-size: 9.5px; font-weight: 600;
+}
+.rf-tier   { background: var(--teal-bg); color: var(--teal); border: 1px solid var(--teal-r); }
+.rf-signal { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-r); }
+.rf-rule   { background: var(--gold-bg); color: var(--gold-l); border: 1px solid var(--gold-r); }
+.rf-action { background: var(--amb-bg);  color: var(--amber); border: 1px solid var(--amb-r); }
+.rf-hitl   { background: var(--pur-bg);  color: var(--purple); border: 1px solid var(--pur-r); }
+.rf-arrow  { color: var(--text3); font-size: 12px; }
+
+</style>
+</head><body>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div class="logo">
+    <div class="logo-box">🕌</div>
+    <div><div class="logo-name">HALMAS</div><div class="logo-sub">Halal Supply Chain Intelligence</div></div>
+  </div>
+  <div class="hsep"></div>
+  <div class="hstat"><div class="hstat-v" id="h-tiers">5/5</div><div class="hstat-l">Tiers OK</div></div>
+  <div class="hsep"></div>
+  <div class="hstat"><div class="hstat-v" id="h-rule">—</div><div class="hstat-l">Active Rule</div></div>
+  <div class="hsep"></div>
+  <div class="hstat"><div class="hstat-v" id="h-sar">—</div><div class="hstat-l">Live SAR</div></div>
+  <div class="hsep"></div>
+  <div class="hstat"><div class="hstat-v" id="h-ev">H+0</div><div class="hstat-l">Time</div></div>
+  <div class="hsep"></div>
+  <span id="gstatus" class="spill sp-idle"><span class="dot"></span><span id="stxt">Idle</span></span>
+  <span id="mpill" class="spill sp-idle" style="margin-left:4px"><span id="mptxt">—</span></span>
+  <div id="hclock">—</div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- SIDEBAR -->
+<div id="sb">
+  <div class="sg">
+    <div class="sgh"><span class="sgh-ic">📂</span><span class="sgh-tx">Experiment Setup</span></div>
+    <label class="uc" id="uc-rules"><input type="file" accept=".json" onchange="upload('rules',this)">
+      <div class="uc-ic">📋</div><div><div class="uc-nm">Orchestrator Rules</div><div class="uc-ds">18 pattern rules (JSON)</div></div><span class="uc-ck">✓</span></label>
+    <label class="uc" id="uc-triggers"><input type="file" accept=".json" onchange="upload('triggers',this)">
+      <div class="uc-ic">⚡</div><div><div class="uc-nm">Trigger Conditions</div><div class="uc-ds">22 disruption triggers (JSON)</div></div><span class="uc-ck">✓</span></label>
+    <label class="uc" id="uc-scenarios"><input type="file" accept=".json" onchange="upload('scenarios',this)">
+      <div class="uc-ic">🗂</div><div><div class="uc-nm">Disruption Scenarios</div><div class="uc-ds">scenarios_100.json</div></div><span class="uc-ck">✓</span></label>
+    <label class="uc" id="uc-normal"><input type="file" accept=".json,.csv" onchange="upload('normal',this)">
+      <div class="uc-ic">📊</div><div><div class="uc-nm">Normal Condition Data</div><div class="uc-ds">data_normal CSV / JSON</div></div><span class="uc-ck">✓</span></label>
+    <button class="btn-demo" onclick="loadDemo()">⚡ Load Built-in Demo</button>
+  </div>
+
+  <div class="sg">
+    <div class="sgh"><span class="sgh-ic">🎯</span><span class="sgh-tx">Scenario</span></div>
+    <select id="sel-sc" onchange="onScChange()"><option value="">— Choose scenario —</option></select>
+    <div class="sc-info" id="sc-info">Select a scenario to view details.</div>
+  </div>
+
+  <div class="sg">
+    <div class="sgh"><span class="sgh-ic">⚙️</span><span class="sgh-tx">Simulation Mode</span></div>
+    <div class="mc" id="mc-baseline" onclick="setMode('baseline')"><div class="mc-rb"></div><div>
+      <div class="mc-tt">Baseline <span class="mtag mt-bl">No MAS</span></div>
+      <div class="mc-ds">Independent sensing only. No coordination, no supply flow amplification.</div></div></div>
+    <div class="mc" id="mc-reactive" onclick="setMode('reactive')"><div class="mc-rb"></div><div>
+      <div class="mc-tt">Reactive <span class="mtag mt-re">Fixed SOP</span></div>
+      <div class="mc-ds">Fixed reorder policy per tier. Supply flow active but uncoordinated.</div></div></div>
+    <div class="mc active" id="mc-autonomous" onclick="setMode('autonomous')"><div class="mc-rb"></div><div>
+      <div class="mc-tt">Autonomous <span class="mtag mt-au">MAS Active</span></div>
+      <div class="mc-ds">Coordinating Agent active. 18-rule binary pattern matching.</div></div></div>
+    <div class="mc" id="mc-hitl" onclick="setMode('hitl')"><div class="mc-rb"></div><div>
+      <div class="mc-tt">HitL Advisory <span class="mtag mt-hi">+Human</span></div>
+      <div class="mc-ds">Autonomous + manager review per instruction. Accept/Modify/Override/Timeout.</div></div></div>
+  </div>
+
+  <div class="sg">
+    <div class="sgh"><span class="sgh-ic">▶</span><span class="sgh-tx">Controls</span></div>
+    <div style="font-size:9px;color:var(--text3);margin-bottom:4px">Speed (per event)</div>
+    <div class="spd">
+      <button class="spd-btn" id="sp-1" onclick="setSpd(1)">Slow<br><span style="font-size:7.5px;opacity:.7">10 sec</span></button>
+      <button class="spd-btn active" id="sp-2" onclick="setSpd(2)">Normal<br><span style="font-size:7.5px;opacity:.7">5 sec</span></button>
+      <button class="spd-btn" id="sp-3" onclick="setSpd(3)">Fast<br><span style="font-size:7.5px;opacity:.7">2 sec</span></button>
+    </div>
+    <div class="cbs">
+      <button class="btn btn-run" id="btn-run" onclick="runSim()">▶ Run</button>
+      <button class="btn btn-ic" id="btn-pause" onclick="pauseSim()" disabled>⏸</button>
+      <button class="btn btn-ic btn-rst" onclick="resetSim()">↺</button>
+    </div>
+    <div class="pw" id="pw">
+      <div class="pl"><span>Progress</span><span id="ppct" style="font-family:'Space Mono',monospace">0%</span></div>
+      <div class="pt"><div class="pf" id="pf" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="sg">
+    <div class="sgh"><span class="sgh-ic">🔑</span><span class="sgh-tx">Legend</span></div>
+    <div class="leg-row"><div class="leg-dot" style="background:var(--teal)"></div>Normal — within threshold</div>
+    <div class="leg-row"><div class="leg-dot" style="background:var(--amber)"></div>Potential — approaching limit</div>
+    <div class="leg-row"><div class="leg-dot" style="background:var(--red)"></div>Disrupted — threshold exceeded</div>
+    <div class="leg-row"><div class="leg-dot" style="background:var(--blue);border-radius:3px"></div>Active rule / HitL decision</div>
+    <div style="margin-top:6px;font-size:9px;color:var(--text3);line-height:1.5">
+      ✓ = within threshold<br>⚠ = threshold breached
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- ROW 1: SC MAP + CURRENT STATUS -->
+  <div id="row1">
+
+    <!-- SC Map with threshold details -->
+    <div id="scwrap">
+      <div class="sec-hdr">
+        <div class="sec-ic">🔗</div>
+        <div class="sec-tt">Supply Chain Live Map — Thresholds & Status</div>
+        <span class="sec-tag" id="map-tag" style="background:var(--panel3);color:var(--text3)">—</span>
+      </div>
+      <div id="scmap"></div>
+    </div>
+
+    <!-- Current Status Panel -->
+    <div id="curstat">
+      <div class="sec-hdr" style="margin-bottom:6px">
+        <div class="sec-ic">📡</div>
+        <div class="sec-tt">Current Status</div>
+      </div>
+
+      <!-- Disrupted tiers -->
+      <div class="cs-block">
+        <div class="cs-block-title">
+          <div class="dot" style="background:var(--red)"></div>
+          DISRUPTED TIERS
+        </div>
+        <div id="cs-disrupted"><div class="cs-empty">All tiers normal</div></div>
+      </div>
+
+      <!-- Active rule -->
+      <div class="cs-block">
+        <div class="cs-block-title">
+          <div class="dot" style="background:var(--blue)"></div>
+          ACTIVE RULE
+        </div>
+        <div id="cs-rule"><div class="cs-empty">No rule active</div></div>
+      </div>
+
+      <!-- Current actions -->
+      <div class="cs-block" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+        <div class="cs-block-title">
+          <div class="dot" style="background:var(--teal)"></div>
+          CURRENT ACTIONS
+        </div>
+        <div id="cs-actions" style="overflow-y:auto;flex:1"><div class="cs-empty">No actions dispatched</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: LOG VIEWER -->
+  <div id="row2">
+    <div id="tabs">
+      <div class="tab active" onclick="switchTab('coord')" id="tab-coord">
+        <span class="tab-dot" style="background:var(--gold-l)"></span>Coordinator
+      </div>
+      <div class="tab" onclick="switchTab('supplier')" id="tab-supplier">
+        <span class="tab-dot" style="background:var(--blue)"></span>Supplier
+      </div>
+      <div class="tab" onclick="switchTab('farm')" id="tab-farm">
+        <span class="tab-dot" style="background:var(--teal)"></span>Farm
+      </div>
+      <div class="tab" onclick="switchTab('slaughterhouse')" id="tab-slaughterhouse">
+        <span class="tab-dot" style="background:var(--amber)"></span>Slaughterhouse
+      </div>
+      <div class="tab" onclick="switchTab('wholesaler')" id="tab-wholesaler">
+        <span class="tab-dot" style="background:var(--blue)"></span>Wholesaler
+      </div>
+      <div class="tab" onclick="switchTab('retail')" id="tab-retail">
+        <span class="tab-dot" style="background:var(--red)"></span>Retail
+      </div>
+    </div>
+    <div id="log-content">
+      <div class="empty-log">
+        <div class="empty-log-ic">📋</div>
+        Run a simulation to populate the logs.<br>
+        <span style="font-size:10px">Each tab shows the hour-by-hour log for that agent.</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+<script>
+/* ══════════════════════════════════════════════════════════
+   HALMAS Dashboard — Full Script
+   All data, state, and simulation logic
+══════════════════════════════════════════════════════════ */
+
+/* ─── TIER DEFINITIONS with THRESHOLDS ─────────────────── */
+const TIERS = [
+  {
+    key:'supplier', lbl:'Supplier', ic:'🏭', scan:'18 hrs',
+    vars:[
+      {k:'available_supply', lbl:'Supply',      val:'920 unit', threshold:'< 300 unit (30%)',  ok:true},
+      {k:'lead_time',        lbl:'Lead time',   val:'2.0 days', threshold:'> 4 days',          ok:true},
+      {k:'price_index',      lbl:'Price idx',   val:'1.02',     threshold:'> 1.50',            ok:true},
+      {k:'reliability',      lbl:'Reliability', val:'0.95',     threshold:'< 0.60',            ok:true},
+    ]
+  },
+  {
+    key:'farm', lbl:'Farm', ic:'🐔', scan:'9 hrs',
+    vars:[
+      {k:'production_capacity', lbl:'Production',    val:'760 ekor', threshold:'< 480 ekor (60%)', ok:true},
+      {k:'mortality_rate',      lbl:'Mortality',     val:'2.2%',     threshold:'> 8%',             ok:true},
+      {k:'feed_stock',          lbl:'Feed stock',    val:'475 kg',   threshold:'< 3-day supply',   ok:true},
+      {k:'disease_alert',       lbl:'Disease alert', val:'0 (OFF)',  threshold:'== 1 (ON)',         ok:true},
+    ]
+  },
+  {
+    key:'slaughterhouse', lbl:'Slaughter', ic:'🔪', scan:'3 hrs',
+    vars:[
+      {k:'processing_capacity', lbl:'Capacity',   val:'460 ekor', threshold:'< 250 ekor (50%)', ok:true},
+      {k:'processing_delay',    lbl:'Delay',      val:'0.28 hrs', threshold:'> 4 hrs',          ok:true},
+      {k:'output_stock',        lbl:'Output',     val:'300 kg',   threshold:'< 120 kg (30%)',   ok:true},
+      {k:'worker_avail',        lbl:'Workers',    val:'92%',      threshold:'< 60%',            ok:true},
+    ]
+  },
+  {
+    key:'wholesaler', lbl:'Wholesaler', ic:'📦', scan:'2 hrs',
+    vars:[
+      {k:'inventory_level',   lbl:'Inventory', val:'185 kg', threshold:'< 90 kg (30%)',    ok:true},
+      {k:'pending_shipments', lbl:'Pending',   val:'8 kg',   threshold:'> 50 kg',          ok:true},
+      {k:'incoming_orders',   lbl:'Orders',    val:'143 kg', threshold:'> 360 kg (120%)',  ok:true},
+    ]
+  },
+  {
+    key:'retail', lbl:'Retail', ic:'🛒', scan:'45 min',
+    vars:[
+      {k:'retail_inventory',  lbl:'Inventory',    val:'88 kg',     threshold:'< 30 kg (safety)', ok:true},
+      {k:'stockout_flag',     lbl:'Stockout',     val:'0 (none)',  threshold:'== 1',              ok:true},
+      {k:'sales_rate',        lbl:'Sales rate',   val:'10 kg/hr',  threshold:'> 15 kg/hr (150%)',ok:true},
+      {k:'shortage_duration', lbl:'Shortage dur', val:'0 hrs',     threshold:'> 2 hrs',          ok:true},
+    ]
+  }
+];
+
+const RULES = [
+  {id:'R1', pat:'(0,0,0,0,0)',urg:'normal', lbl:'Not Disruption — all clear',          actions:{}},
+  {id:'R2', pat:'(1,0,0,0,0)',urg:'normal', lbl:'Supplier — potential warning',
+    actions:{supplier:'Monitor supply closely — raise early warning flag',
+             farm:'Anticipate reduced DOC supply — pre-order buffer stock',
+             wholesaler:'Activate alternative supplier contacts'}},
+  {id:'R3', pat:'(1,1,0,0,0)',urg:'high',   lbl:'Supplier + Farm disrupted',
+    actions:{supplier:'Emergency procurement — bypass normal lead_time ceiling',
+             farm:'Halt non-critical outgoing — preserve healthy flock output',
+             slaughterhouse:'Reduce schedule 20% — expect lower input from farm',
+             wholesaler:'Raise incoming_orders acceptance +30%'}},
+  {id:'R4', pat:'(0,1,0,0,0)',urg:'normal', lbl:'Farm — potential warning',
+    actions:{farm:'Reduce outgoing_orders to 80% — production below threshold',
+             slaughterhouse:'Reduce processing schedule 20% — expect lower farm input',
+             retail:'Raise reorder_request +20 kg — early warning buffer'}},
+  {id:'R5', pat:'(0,1,1,0,0)',urg:'high',   lbl:'Farm + Slaughterhouse disrupted',
+    actions:{farm:'Halt all non-critical outgoing immediately',
+             slaughterhouse:'Emergency schedule — reduce queue, prioritise throughput',
+             wholesaler:'Emergency buffer +30% incoming_orders acceptance',
+             retail:'Raise reorder_request +35 kg'}},
+  {id:'R6', pat:'(0,0,1,0,0)',urg:'normal', lbl:'Slaughterhouse — potential warning',
+    actions:{slaughterhouse:'Increase throughput — reduce queue backlog',
+             wholesaler:'Reroute via alternative distribution point',
+             farm:'Throttle outgoing to match SH capacity'}},
+  {id:'R7', pat:'(0,0,1,1,0)',urg:'high',   lbl:'Slaughterhouse + Wholesaler disrupted',
+    actions:{slaughterhouse:'Crisis mode — minimal viable capacity',
+             wholesaler:'Reroute all pending_shipments to retail priority',
+             retail:'Raise reorder_request +35 kg — activate backup list',
+             farm:'Accelerate outgoing to bypass SH bottleneck'}},
+  {id:'R8', pat:'(0,0,0,1,0)',urg:'normal', lbl:'Wholesaler — potential warning',
+    actions:{wholesaler:'Activate rerouting — reduce pending_shipments backlog',
+             retail:'Anticipate delay — raise safety_stock trigger'}},
+  {id:'R9', pat:'(0,0,0,1,1)',urg:'high',   lbl:'Wholesaler + Retail disrupted',
+    actions:{wholesaler:'Emergency distribution — deliver all pending within 4 hrs',
+             retail:'Raise reorder_request +30 kg — shortage critical',
+             slaughterhouse:'Redirect output to retail-priority channel'}},
+  {id:'R10',pat:'(1,0,0,1,0)',urg:'high',   lbl:'Supplier + Wholesaler disrupted',
+    actions:{supplier:'Synchronise emergency procurement with wholesale demand',
+             wholesaler:'Activate alternative supplier emergency contacts',
+             farm:'Maintain maximum outgoing to bypass supply gap'}},
+  {id:'R11',pat:'(1,1,1,0,0)',urg:'crisis', lbl:'CRISIS — upstream 3 tiers',
+    actions:{supplier:'Full emergency procurement — all alternative suppliers',
+             farm:'Maximum control — emergency reporting every 3 hours',
+             slaughterhouse:'Redirect all output to retail-priority distribution',
+             wholesaler:'Activate crisis buffer — suspend non-retail distribution',
+             retail:'Raise reorder_request +40 kg'}},
+  {id:'R12',pat:'(0,1,0,1,0)',urg:'high',   lbl:'Farm + Wholesaler disrupted',
+    actions:{farm:'Accelerate recovery — maximise healthy flock output',
+             wholesaler:'Emergency rebalance — prioritise retail channel',
+             slaughterhouse:'Bridge gap — increase throughput capacity'}},
+  {id:'R13',pat:'(1,0,0,0,1)',urg:'high',   lbl:'Supplier + Retail disrupted',
+    actions:{supplier:'Emergency supply ramp to cover retail deficit',
+             wholesaler:'Redirect all stock to retail immediately',
+             retail:'Raise reorder_request +40 kg — shortage critical'}},
+  {id:'R14',pat:'(0,0,0,0,1)',urg:'normal', lbl:'Retail — potential warning',
+    actions:{wholesaler:'Update demand estimate — buffer shipment to retail',
+             retail:'Raise reorder_request +25 kg — approaching safety_stock'}},
+  {id:'R15',pat:'(1,1,1,1,1)',urg:'crisis', lbl:'FULL CRISIS — all 5 tiers',
+    actions:{supplier:'Full emergency procurement — all alternative suppliers activated',
+             farm:'Maximum depopulation control — emergency reporting',
+             slaughterhouse:'Redirect all output to retail-priority channel',
+             wholesaler:'Reroute all pending_shipments — override normal schedule',
+             retail:'Raise reorder_request +55 kg — activate backup supplier list'}},
+  {id:'R16',pat:'(1,1,1,1,0)',urg:'crisis', lbl:'CRISIS — 4 upstream tiers',
+    actions:{supplier:'Emergency supply ramp — DOC priority shipments',
+             farm:'Maximise healthy flock output — no holding for growth cycle',
+             slaughterhouse:'Full throughput — extend hours to cover deficit',
+             wholesaler:'Suspend non-retail distribution — full retail priority',
+             retail:'Raise reorder_request +50 kg'}},
+  {id:'R17',pat:'(0,1,1,1,1)',urg:'crisis', lbl:'CRISIS — mid + downstream',
+    actions:{farm:'Increase outgoing to maximum — downstream demand critical',
+             slaughterhouse:'Surge capacity — approve overtime shifts',
+             wholesaler:'Emergency distribution — all pending within 4 hrs',
+             retail:'Raise safety_stock to 45 kg — shortage_duration critical'}},
+  {id:'R18',pat:'(0,0,1,1,1)',urg:'high',   lbl:'Downstream — SH + WS + Retail',
+    actions:{slaughterhouse:'Accelerate throughput — downstream starved',
+             wholesaler:'Emergency reroute — all stock to retail',
+             retail:'Raise reorder_request +35 kg',
+             farm:'Accelerate outgoing to rebuild downstream inventory'}},
+];
+
+/* HitL manager profiles per tier */
+const MANAGERS = {
+  supplier:      {name:'Supplier Manager',     pAcc:0.75, pMod:0.18, pOvr:0.07, hrt:2.0},
+  farm:          {name:'Farm Manager',          pAcc:0.62, pMod:0.28, pOvr:0.10, hrt:1.5},
+  slaughterhouse:{name:'Slaughterhouse Manager',pAcc:0.80, pMod:0.14, pOvr:0.06, hrt:0.5},
+  wholesaler:    {name:'Wholesaler Manager',    pAcc:0.68, pMod:0.22, pOvr:0.10, hrt:1.0},
+  retail:        {name:'Retail Manager',        pAcc:0.58, pMod:0.30, pOvr:0.12, hrt:0.25},
+};
+
+function getDecision(tier, urgency) {
+  const m = MANAGERS[tier];
+  let pAcc = m.pAcc + (urgency==='crisis'?0.15:urgency==='high'?0.10:0);
+  pAcc = Math.min(pAcc, 0.90);
+  const r = Math.random();
+  if (r < pAcc) return {dec:'ACCEPT',  hrt:m.hrt * (0.8+Math.random()*.4), factor:1.00};
+  if (r < pAcc + m.pMod) return {dec:'MODIFY',   hrt:m.hrt * (1.0+Math.random()*.5), factor:0.82+Math.random()*.10};
+  const rr = Math.random();
+  if (rr > 0.15) return {dec:'OVERRIDE', hrt:m.hrt * (1.2+Math.random()*.6), factor:0.35+Math.random()*.20};
+  return {dec:'TIMEOUT', hrt:m.hrt * 2.0, factor:1.00};
+}
+
+/* Scenarios */
+const SCENARIOS = [
+  {id:1, name:'AI-01 · H5N1 Local', sev:'medium', dur:72,
+   cascade:['farm','slaughterhouse'],
+   events:[
+    {h:6,  node:'farm',          type:'ONSET',    rule:'R4',
+     desc:'Mortality 14%, disease_alert=1, production=380 ekor (47.5%)',
+     dbChanges:{production_capacity:'380 ekor',mortality_rate:'14.0%',disease_alert:'1 (ON)',feed_stock:'420 kg'},
+     threshChecks:[
+       {var:'production_capacity',val:'380 ekor',threshold:'< 480 ekor (60%)',breach:true},
+       {var:'mortality_rate',val:'14.0%',threshold:'> 8%',breach:true},
+       {var:'feed_stock',val:'420 kg',threshold:'< 3-day supply',breach:false},
+       {var:'disease_alert',val:'1 (ON)',threshold:'== 1',breach:true},
+     ]},
+    {h:18, node:'slaughterhouse', type:'ESCALATE', rule:'R5',
+     desc:'Capacity 35%, processing delay 6 hrs, output_stock 82 kg',
+     dbChanges:{processing_capacity:'175 ekor',processing_delay:'6.0 hrs',output_stock:'82 kg',worker_avail:'62%'},
+     threshChecks:[
+       {var:'processing_capacity',val:'175 ekor',threshold:'< 250 ekor (50%)',breach:true},
+       {var:'processing_delay',val:'6.0 hrs',threshold:'> 4 hrs',breach:true},
+       {var:'output_stock',val:'82 kg',threshold:'< 120 kg (30%)',breach:true},
+       {var:'worker_avail',val:'62%',threshold:'< 60%',breach:false},
+     ]},
+    {h:48, node:'farm',          type:'RECOVER',  rule:'R6',
+     desc:'Mortality 3.5%, disease_alert=0, production=620 ekor (77.5%)',
+     dbChanges:{production_capacity:'620 ekor',mortality_rate:'3.5%',disease_alert:'0 (OFF)',feed_stock:'460 kg'},
+     threshChecks:[
+       {var:'production_capacity',val:'620 ekor',threshold:'< 480 ekor (60%)',breach:false},
+       {var:'mortality_rate',val:'3.5%',threshold:'> 8%',breach:false},
+       {var:'disease_alert',val:'0 (OFF)',threshold:'== 1',breach:false},
+     ]},
+    {h:60, node:'slaughterhouse', type:'RECOVER', rule:'R1',
+     desc:'Capacity 74%, delay 1.8 hrs, output 212 kg',
+     dbChanges:{processing_capacity:'370 ekor',processing_delay:'1.8 hrs',output_stock:'212 kg',worker_avail:'88%'},
+     threshChecks:[
+       {var:'processing_capacity',val:'370 ekor',threshold:'< 250 ekor (50%)',breach:false},
+       {var:'processing_delay',val:'1.8 hrs',threshold:'> 4 hrs',breach:false},
+     ]},
+   ],
+   res:{r:26.1, a:68.4, h:74.2, ttr_a:36, ttr_h:42, sod_r:38, sod_a:6, sod_h:4}},
+
+  {id:2, name:'AI-02 · H5N1 Spreading', sev:'high', dur:96,
+   cascade:['farm','slaughterhouse','wholesaler'],
+   events:[
+    {h:4,  node:'farm',          type:'ONSET',    rule:'R4',
+     desc:'Mortality 24%, depopulation 560 ekor, disease_alert=1',
+     dbChanges:{production_capacity:'240 ekor',mortality_rate:'24.0%',disease_alert:'1 (ON)',feed_stock:'400 kg'},
+     threshChecks:[
+       {var:'production_capacity',val:'240 ekor',threshold:'< 480 ekor (60%)',breach:true},
+       {var:'mortality_rate',val:'24.0%',threshold:'> 8%',breach:true},
+       {var:'disease_alert',val:'1 (ON)',threshold:'== 1',breach:true},
+     ]},
+    {h:16, node:'slaughterhouse', type:'ESCALATE', rule:'R5',
+     desc:'Capacity 22%, delay 8.5 hrs, worker 62%',
+     dbChanges:{processing_capacity:'110 ekor',processing_delay:'8.5 hrs',output_stock:'48 kg',worker_avail:'62%'},
+     threshChecks:[
+       {var:'processing_capacity',val:'110 ekor',threshold:'< 250 ekor (50%)',breach:true},
+       {var:'processing_delay',val:'8.5 hrs',threshold:'> 4 hrs',breach:true},
+       {var:'output_stock',val:'48 kg',threshold:'< 120 kg (30%)',breach:true},
+     ]},
+    {h:30, node:'wholesaler',     type:'ESCALATE', rule:'R7',
+     desc:'Inventory 22% (66 kg), pending 88 kg, delivery delayed',
+     dbChanges:{inventory_level:'66 kg',pending_shipments:'88 kg',incoming_orders:'298 kg'},
+     threshChecks:[
+       {var:'inventory_level',val:'66 kg',threshold:'< 90 kg (30%)',breach:true},
+       {var:'pending_shipments',val:'88 kg',threshold:'> 50 kg',breach:true},
+     ]},
+    {h:60, node:'farm',          type:'RECOVER',  rule:'R7',
+     desc:'Mortality 3.8%, production=610 ekor (76.3%)',
+     dbChanges:{production_capacity:'610 ekor',mortality_rate:'3.8%',disease_alert:'0 (OFF)'},
+     threshChecks:[{var:'production_capacity',val:'610 ekor',threshold:'< 480 ekor (60%)',breach:false}]},
+    {h:72, node:'slaughterhouse', type:'RECOVER',  rule:'R8',
+     desc:'Capacity 77%, delay 1.6 hrs, worker 88%',
+     dbChanges:{processing_capacity:'385 ekor',processing_delay:'1.6 hrs',output_stock:'220 kg'},
+     threshChecks:[{var:'processing_capacity',val:'385 ekor',threshold:'< 250 ekor (50%)',breach:false}]},
+    {h:84, node:'wholesaler',     type:'RECOVER',  rule:'R1',
+     desc:'Inventory 54% (162 kg), pending 16 kg — stable',
+     dbChanges:{inventory_level:'162 kg',pending_shipments:'16 kg'},
+     threshChecks:[{var:'inventory_level',val:'162 kg',threshold:'< 90 kg (30%)',breach:false}]},
+   ],
+   res:{r:17.1, a:55.8, h:62.3, ttr_a:44, ttr_h:52, sod_r:58, sod_a:18, sod_h:12}},
+
+  {id:3, name:'AI-03 · H5N1 Regional Crisis', sev:'crisis', dur:120,
+   cascade:['farm','supplier','slaughterhouse','wholesaler','retail'],
+   events:[
+    {h:6,  node:'farm',          type:'ONSET',    rule:'R4',
+     desc:'Mortality 35%, disease_alert=1, production=120 ekor (15% of planned)',
+     dbChanges:{production_capacity:'120 ekor',mortality_rate:'35.0%',disease_alert:'1 (ON)',feed_stock:'360 kg'},
+     threshChecks:[
+       {var:'production_capacity',val:'120 ekor',threshold:'< 480 ekor (60%)',breach:true},
+       {var:'mortality_rate',val:'35.0%',threshold:'> 8%',breach:true},
+       {var:'disease_alert',val:'1 (ON)',threshold:'== 1',breach:true},
+     ]},
+    {h:14, node:'supplier',       type:'ESCALATE', rule:'R3',
+     desc:'Supply 22% (220 unit), lead_time 7 days, reliability 0.45',
+     dbChanges:{available_supply:'220 unit',lead_time:'7.0 days',price_index:'1.48',reliability:'0.45'},
+     threshChecks:[
+       {var:'available_supply',val:'220 unit',threshold:'< 300 unit (30%)',breach:true},
+       {var:'lead_time',val:'7.0 days',threshold:'> 4 days',breach:true},
+       {var:'reliability',val:'0.45',threshold:'< 0.60',breach:true},
+     ]},
+    {h:24, node:'slaughterhouse', type:'ESCALATE', rule:'R11',
+     desc:'Capacity 16%, delay 10 hrs, worker 55% — CRISIS upstream triggered',
+     dbChanges:{processing_capacity:'80 ekor',processing_delay:'10.0 hrs',output_stock:'22 kg',worker_avail:'55%'},
+     threshChecks:[
+       {var:'processing_capacity',val:'80 ekor',threshold:'< 250 ekor (50%)',breach:true},
+       {var:'processing_delay',val:'10.0 hrs',threshold:'> 4 hrs',breach:true},
+       {var:'output_stock',val:'22 kg',threshold:'< 120 kg (30%)',breach:true},
+       {var:'worker_avail',val:'55%',threshold:'< 60%',breach:true},
+     ]},
+    {h:36, node:'wholesaler',     type:'ESCALATE', rule:'R16',
+     desc:'Inventory 9% (28 kg), pending 95 kg — panic buying surge',
+     dbChanges:{inventory_level:'28 kg',pending_shipments:'95 kg',incoming_orders:'295 kg'},
+     threshChecks:[
+       {var:'inventory_level',val:'28 kg',threshold:'< 90 kg (30%)',breach:true},
+       {var:'pending_shipments',val:'95 kg',threshold:'> 50 kg',breach:true},
+     ]},
+    {h:48, node:'retail',         type:'ESCALATE', rule:'R15',
+     desc:'STOCKOUT — retail_inventory 4 kg, sales 220% normal, shortage_duration 5 hrs',
+     dbChanges:{retail_inventory:'4 kg',stockout_flag:'1 (ACTIVE)',sales_rate:'22 kg/hr',shortage_duration:'5.0 hrs'},
+     threshChecks:[
+       {var:'retail_inventory',val:'4 kg',threshold:'< 30 kg (safety)',breach:true},
+       {var:'stockout_flag',val:'1 (ACTIVE)',threshold:'== 1',breach:true},
+       {var:'sales_rate',val:'22 kg/hr',threshold:'> 15 kg/hr (150%)',breach:true},
+       {var:'shortage_duration',val:'5.0 hrs',threshold:'> 2 hrs',breach:true},
+     ]},
+    {h:66, node:'supplier',       type:'RECOVER',  rule:'R17',
+     desc:'Supply 68% (680 unit), lead 2.8 days, reliability 0.78',
+     dbChanges:{available_supply:'680 unit',lead_time:'2.8 days',reliability:'0.78'},
+     threshChecks:[
+       {var:'available_supply',val:'680 unit',threshold:'< 300 unit (30%)',breach:false},
+       {var:'lead_time',val:'2.8 days',threshold:'> 4 days',breach:false},
+     ]},
+    {h:78, node:'farm',           type:'RECOVER',  rule:'R18',
+     desc:'Mortality 3.8%, disease_alert=0, production=610 ekor (76.3%)',
+     dbChanges:{production_capacity:'610 ekor',mortality_rate:'3.8%',disease_alert:'0 (OFF)'},
+     threshChecks:[{var:'production_capacity',val:'610 ekor',threshold:'< 480 ekor (60%)',breach:false}]},
+    {h:90, node:'slaughterhouse', type:'RECOVER',  rule:'R9',
+     desc:'Capacity 74%, delay 1.8 hrs, worker 82%',
+     dbChanges:{processing_capacity:'370 ekor',processing_delay:'1.8 hrs',output_stock:'214 kg'},
+     threshChecks:[{var:'processing_capacity',val:'370 ekor',threshold:'< 250 ekor (50%)',breach:false}]},
+    {h:102,node:'wholesaler',     type:'RECOVER',  rule:'R14',
+     desc:'Inventory 54% (162 kg), pending 16 kg — normalised',
+     dbChanges:{inventory_level:'162 kg',pending_shipments:'16 kg'},
+     threshChecks:[{var:'inventory_level',val:'162 kg',threshold:'< 90 kg (30%)',breach:false}]},
+    {h:114,node:'retail',         type:'RECOVER',  rule:'R1',
+     desc:'Inventory 68 kg (45%), stockout=0, shortage=0 — fully stable',
+     dbChanges:{retail_inventory:'68 kg',stockout_flag:'0 (none)',sales_rate:'10 kg/hr',shortage_duration:'0 hrs'},
+     threshChecks:[{var:'retail_inventory',val:'68 kg',threshold:'< 30 kg (safety)',breach:false}]},
+   ],
+   res:{r:12.9, a:44.1, h:62.9, ttr_a:68, ttr_h:76, sod_r:88, sod_a:42, sod_h:28}},
+
+  {id:4, name:'AI-04 · H9N2 LPAI Mild', sev:'low', dur:48,
+   cascade:['farm'],
+   events:[
+    {h:8,  node:'farm', type:'ONSET',   rule:'R4',
+     desc:'Mortality 9%, disease_alert=1, production=520 ekor (65%) — mild LPAI',
+     dbChanges:{production_capacity:'520 ekor',mortality_rate:'9.0%',disease_alert:'1 (ON)'},
+     threshChecks:[
+       {var:'production_capacity',val:'520 ekor',threshold:'< 480 ekor (60%)',breach:false},
+       {var:'mortality_rate',val:'9.0%',threshold:'> 8%',breach:true},
+       {var:'disease_alert',val:'1 (ON)',threshold:'== 1',breach:true},
+     ]},
+    {h:30, node:'farm', type:'RECOVER', rule:'R1',
+     desc:'Mortality 3.2%, disease_alert=0, production=745 ekor (93%)',
+     dbChanges:{production_capacity:'745 ekor',mortality_rate:'3.2%',disease_alert:'0 (OFF)'},
+     threshChecks:[{var:'mortality_rate',val:'3.2%',threshold:'> 8%',breach:false}]},
+   ],
+   res:{r:23.2, a:88.5, h:79.3, ttr_a:12, ttr_h:15, sod_r:26, sod_a:0, sod_h:2}},
+
+  {id:5, name:'AI-05 · DOC Embargo', sev:'high', dur:96,
+   cascade:['supplier','farm','slaughterhouse'],
+   events:[
+    {h:6,  node:'supplier', type:'ONSET',    rule:'R2',
+     desc:'Supply 18% (180 unit), lead 8 days, reliability 0.38 — DOC embargo issued',
+     dbChanges:{available_supply:'180 unit',lead_time:'8.0 days',reliability:'0.38'},
+     threshChecks:[
+       {var:'available_supply',val:'180 unit',threshold:'< 300 unit (30%)',breach:true},
+       {var:'lead_time',val:'8.0 days',threshold:'> 4 days',breach:true},
+       {var:'reliability',val:'0.38',threshold:'< 0.60',breach:true},
+     ]},
+    {h:20, node:'farm',     type:'ESCALATE', rule:'R3',
+     desc:'Production 47.5%, feed 2.3 days — DOC repopulation blocked',
+     dbChanges:{production_capacity:'380 ekor',mortality_rate:'2.5%',feed_stock:'184 kg'},
+     threshChecks:[
+       {var:'production_capacity',val:'380 ekor',threshold:'< 480 ekor (60%)',breach:true},
+       {var:'feed_stock',val:'184 kg',threshold:'< 3-day supply',breach:true},
+     ]},
+    {h:34, node:'slaughterhouse', type:'ESCALATE', rule:'R11',
+     desc:'Capacity 38%, delay 5 hrs — input from farm collapsing',
+     dbChanges:{processing_capacity:'190 ekor',processing_delay:'5.0 hrs',output_stock:'68 kg'},
+     threshChecks:[
+       {var:'processing_capacity',val:'190 ekor',threshold:'< 250 ekor (50%)',breach:true},
+       {var:'processing_delay',val:'5.0 hrs',threshold:'> 4 hrs',breach:true},
+     ]},
+    {h:58, node:'supplier', type:'RECOVER',  rule:'R5',
+     desc:'Supply 72% (720 unit), lead 2.5 days — embargo lifted',
+     dbChanges:{available_supply:'720 unit',lead_time:'2.5 days',reliability:'0.82'},
+     threshChecks:[{var:'available_supply',val:'720 unit',threshold:'< 300 unit (30%)',breach:false}]},
+    {h:72, node:'farm',     type:'RECOVER',  rule:'R6',
+     desc:'Production 82.5%, feed 5.3 days — DOC repopulation underway',
+     dbChanges:{production_capacity:'660 ekor',feed_stock:'424 kg'},
+     threshChecks:[{var:'production_capacity',val:'660 ekor',threshold:'< 480 ekor (60%)',breach:false}]},
+    {h:84, node:'slaughterhouse', type:'RECOVER', rule:'R1',
+     desc:'Capacity 76%, delay 1.2 hrs — normalised',
+     dbChanges:{processing_capacity:'380 ekor',processing_delay:'1.2 hrs',output_stock:'218 kg'},
+     threshChecks:[{var:'processing_capacity',val:'380 ekor',threshold:'< 250 ekor (50%)',breach:false}]},
+   ],
+   res:{r:17.2, a:76.3, h:81.2, ttr_a:44, ttr_h:50, sod_r:58, sod_a:12, sod_h:8}},
+];
+
+/* ══════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════ */
+const S = {
+  mode:'autonomous', sc:null,
+  running:false, paused:false,
+  step:0, timer:null,
+  tiers:{supplier:0,farm:0,slaughterhouse:0,wholesaler:0,retail:0},
+  activeRule:null, sarHist:[], spd:2,
+  currentTab:'coord',
+  logs:{coord:[], supplier:[], farm:[], slaughterhouse:[], wholesaler:[], retail:[]},
+};
+const SPEEDS = {1:10000, 2:5000, 3:2000};
+
+/* Clock */
+setInterval(()=>{
+  const n=new Date();
+  document.getElementById('hclock').textContent=
+    n.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+
+    ' · '+n.toLocaleTimeString('en-GB');
+},1000);
+
+/* ══════════════════════════════════════════════════════
+   UPLOAD / DEMO
+══════════════════════════════════════════════════════ */
+function upload(type,inp){
+  if(!inp.files||!inp.files[0])return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      if(type==='scenarios'){
+        const d=JSON.parse(e.target.result);
+        const arr=Array.isArray(d)?d:[d];
+        arr.forEach(sc=>{
+          const conv=cvtSc(sc);
+          const idx=SCENARIOS.findIndex(x=>x.id===conv.id);
+          if(idx>=0)SCENARIOS[idx]=conv;else SCENARIOS.push(conv);
+        });
+        popSel();
+      }
+      markLoaded(type,inp.files[0].name);
+    }catch(err){alert('Parse error: '+err.message)}
+  };
+  r.readAsText(inp.files[0]);
+}
+
+function cvtSc(sc){
+  return{id:sc.scenario_id,name:'SC-'+String(sc.scenario_id).padStart(3,'0')+' · '+(sc.subtype||sc.disruption_type||'Unknown'),
+    sev:sc.severity,dur:sc.duration_hours,cascade:sc.cascade_path||[],
+    events:(sc.events||[]).map(e=>({h:e.at_hour,node:e.node,
+      type:e.disrupted?(e.event_type==='onset'?'ONSET':'ESCALATE'):'RECOVER',
+      rule:e.rule_triggered||'R1',desc:e.description||'',
+      dbChanges:{},threshChecks:[]})),
+    res:{r:null,a:null,h:null,ttr_a:null,ttr_h:null,sod_r:null,sod_a:null,sod_h:null}};
+}
+
+function markLoaded(type,name){
+  const el=document.getElementById('uc-'+type);
+  if(el){el.classList.add('loaded');el.querySelector('.uc-ds').textContent='✓ '+name}
+}
+
+function loadDemo(){
+  ['rules','triggers','scenarios','normal'].forEach(t=>markLoaded(t,'Demo data'));
+  popSel();
+}
+
+/* ══════════════════════════════════════════════════════
+   SCENARIO
+══════════════════════════════════════════════════════ */
+function popSel(){
+  const sel=document.getElementById('sel-sc');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— Choose scenario —</option>';
+  const ic={low:'🟢',medium:'🟡',high:'🟠',crisis:'🔴'};
+  SCENARIOS.forEach(sc=>{
+    const o=document.createElement('option');
+    o.value=sc.id;o.textContent=`${ic[sc.sev]||'⚪'} ${sc.name} · ${sc.dur}h`;
+    sel.appendChild(o);
+  });
+  if(cur)sel.value=cur;
+  onScChange();
+}
+
+function onScChange(){
+  const id=parseInt(document.getElementById('sel-sc').value);
+  S.sc=SCENARIOS.find(s=>s.id===id)||null;
+  const el=document.getElementById('sc-info');
+  if(S.sc){
+    const c={low:'var(--teal)',medium:'var(--amber)',high:'var(--amber)',crisis:'var(--red)'}[S.sc.sev];
+    el.innerHTML=`<span style="color:${c};font-weight:700">${S.sc.sev.toUpperCase()}</span>
+      &nbsp;·&nbsp; ${S.sc.dur} hours &nbsp;·&nbsp; ${S.sc.events.length} events<br>
+      <span style="color:var(--text3)">Cascade: ${S.sc.cascade.join(' → ')}</span>`;
+  } else el.textContent='Select a scenario to view details.';
+}
+
+/* ══════════════════════════════════════════════════════
+   MODE
+══════════════════════════════════════════════════════ */
+function setMode(m){
+  S.mode=m;
+  ['baseline','reactive','autonomous','hitl'].forEach(x=>
+    document.getElementById('mc-'+x).classList.toggle('active',x===m));
+  const mc={baseline:'var(--text3)',reactive:'var(--amber)',autonomous:'var(--teal)',hitl:'var(--purple)'};
+  const ml={baseline:'BASELINE',reactive:'REACTIVE',autonomous:'AUTONOMOUS',hitl:'HitL ADVISORY'};
+  const pill=document.getElementById('mpill');
+  pill.style.cssText=`border-color:${mc[m]};background:${mc[m]}14;color:${mc[m]}`;
+  document.getElementById('mptxt').textContent=ml[m];
+  const mapTag=document.getElementById('map-tag');
+  mapTag.textContent=ml[m];
+  mapTag.style.cssText=`background:${mc[m]}18;color:${mc[m]};border:1px solid ${mc[m]}35`;
+  renderMap();
+}
+
+/* ══════════════════════════════════════════════════════
+   TIER MAP with THRESHOLDS
+══════════════════════════════════════════════════════ */
+function renderMap(){
+  const container=document.getElementById('scmap');
+  let h='';
+  TIERS.forEach((t,i)=>{
+    const st=S.tiers[t.key];
+    const tc=['tc-ok','tc-pot','tc-dis'][st];
+    const stlbl=['Normal','Potential','DISRUPTED'][st];
+    const stcls=['st-ok','st-pot','st-dis'][st];
+    const fl=['fl-ok','fl-rd','fl-cr'][Math.min(st,2)];
+
+    // Build threshold rows
+    const thrRows=t.vars.map(v=>{
+      const breach=st>0&&v.ok===false||false;
+      return`<div class="thr-row">
+        <span class="thr-key">${v.lbl}</span>
+        <span class="thr-val">${v.val}</span>
+        <span class="${breach?'thr-warn':'thr-ok'}">${breach?'⚠':'✓'}</span>
+      </div>`;
+    }).join('');
+
+    h+=`<div class="tc-wrap">
+      <div class="tc ${tc}" onclick="showDetail('${t.key}')" title="Click for detail">
+        <div class="tc-ic">${t.ic}</div>
+        <div class="tc-nm">${t.lbl}</div>
+        <div class="tc-mv" id="tv-${t.key}">${t.vars[0].val}</div>
+        <div class="tc-sc">🕐 ${t.scan}</div>
+        <div class="tc-st ${stcls}">${stlbl}</div>
+        <div class="tc-thresh">${thrRows}</div>
+      </div>`;
+    if(i<TIERS.length-1)
+      h+=`<div class="fc">
+        <div class="ft ${fl}"><div class="ff"></div></div>
+        <div class="fa">→</div>
+      </div>`;
+    h+='</div>';
+  });
+  container.innerHTML=h;
+}
+
+function showDetail(key){
+  const t=TIERS.find(x=>x.key===key);
+  const st=S.tiers[key];
+  const stl=['● Normal','▲ Potential','⚠ DISRUPTED'][st];
+  const stc=['var(--teal)','var(--amber)','var(--red)'][st];
+  // Switch to that tier's log tab
+  switchTab(key);
+}
+
+/* ══════════════════════════════════════════════════════
+   CURRENT STATUS PANEL
+══════════════════════════════════════════════════════ */
+function updateCurrentStatus(ev, rule, hitlDecisions){
+  const ruleObj = RULES.find(r=>r.id===rule);
+
+  // Disrupted tiers
+  const disEl=document.getElementById('cs-disrupted');
+  const disrupted=Object.entries(S.tiers).filter(([,v])=>v>0);
+  if(disrupted.length===0){
+    disEl.innerHTML='<div class="cs-empty">All tiers normal ✓</div>';
+  } else {
+    disEl.innerHTML=disrupted.map(([k,v])=>{
+      const t=TIERS.find(x=>x.key===k);
+      return`<div class="dis-item">
+        <span class="dis-tier">${t?t.ic:''} ${t?t.lbl:k}</span>
+        <span class="dis-reason">${v===2?ev&&ev.node===k?ev.desc:'Disrupted':'Potential'}</span>
+        <span class="dis-since">H+${ev?ev.h:'—'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Active rule
+  const ruleEl=document.getElementById('cs-rule');
+  if(!ruleObj||rule==='R1'||S.mode==='baseline'||S.mode==='reactive'){
+    ruleEl.innerHTML=`<div class="cs-empty">${S.mode==='baseline'||S.mode==='reactive'?'No rule matching in this mode':'All clear — R1 (no disruption)'}</div>`;
+  } else {
+    const urgCls={crisis:'ru-c',high:'ru-h',normal:'ru-n'}[ruleObj.urg];
+    ruleEl.innerHTML=`<div class="rule-display">
+      <div class="rule-id-big">${ruleObj.id}</div>
+      <div class="rule-info">
+        <div class="rule-pat-disp">${ruleObj.pat}</div>
+        <div class="rule-lbl-disp">${ruleObj.lbl}</div>
+        <span class="rule-urg-disp ${urgCls}">${ruleObj.urg.toUpperCase()}</span>
+      </div>
+    </div>`;
+  }
+
+  // Current actions
+  const actEl=document.getElementById('cs-actions');
+  if(!ruleObj||!ruleObj.actions||Object.keys(ruleObj.actions).length===0||S.mode==='baseline'){
+    actEl.innerHTML='<div class="cs-empty">No actions dispatched</div>';
+  } else {
+    const acts=Object.entries(ruleObj.actions);
+    actEl.innerHTML=acts.map(([tier,instr])=>{
+      const t=TIERS.find(x=>x.key===tier);
+      const hitl=hitlDecisions?hitlDecisions[tier]:null;
+      const badgeHtml=hitl
+        ? `<span class="act-badge ${{'ACCEPT':'ab-acc','MODIFY':'ab-mod','OVERRIDE':'ab-ov','TIMEOUT':'ab-to'}[hitl.dec]}">${hitl.dec}</span>`
+        : S.mode==='autonomous'?`<span class="act-badge ab-auto">AUTO</span>`:'';
+      return`<div class="act-item">
+        <span class="act-arrow">→</span>
+        <span class="act-tier">${t?t.ic:''} ${t?t.lbl:tier}</span>
+        <span class="act-instr">${instr}</span>
+        ${badgeHtml}
+      </div>`;
+    }).join('');
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   TAB SYSTEM
+══════════════════════════════════════════════════════ */
+function switchTab(tab){
+  S.currentTab=tab;
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  const tabEl=document.getElementById('tab-'+tab);
+  if(tabEl) tabEl.classList.add('active');
+  renderLog(tab);
+}
+
+
+
+function renderLogEntry(entry){
+  const tagHtml=`<span class="le-tag lt-${entry.type}">${entry.typeLabel}</span>`;
+  let bodyHtml='';
+
+  if(entry.type==='scan'){
+    bodyHtml=`<div class="log-sub"><span class="log-sub-key">Agent:</span>
+      <span class="log-sub-val">${entry.tierLabel} (scan interval: ${entry.scan})</span></div>
+      <div class="log-sub"><span class="log-sub-key">DB State:</span>
+      <span class="log-sub-val">${Object.entries(entry.dbState||{}).map(([k,v])=>`${k}: ${v}`).join(' | ')}</span></div>
+      <table class="thr-table" style="margin-top:4px">
+        <tr><th>Variable</th><th>Current Value</th><th>Threshold</th><th>Status</th></tr>
+        ${(entry.checks||[]).map(c=>`<tr>
+          <td>${c.var}</td>
+          <td class="${c.breach?'v-fail':'v-ok'}">${c.val}</td>
+          <td>${c.threshold}</td>
+          <td class="${c.breach?'status-fail':'status-ok'}">${c.breach?'⚠ BREACH':'✓ OK'}</td>
+        </tr>`).join('')}
+      </table>`;
+  }
+  else if(entry.type==='disrupt'||entry.type==='recover'){
+    bodyHtml=`<div class="log-sub"><span class="log-sub-key">Event:</span>
+      <span class="log-sub-val">${entry.desc}</span></div>
+      <table class="thr-table" style="margin-top:4px">
+        <tr><th>Variable</th><th>Current Value</th><th>Threshold</th><th>Status</th></tr>
+        ${(entry.checks||[]).map(c=>`<tr>
+          <td>${c.var}</td>
+          <td class="${c.breach?'v-fail':'v-ok'}">${c.val}</td>
+          <td>${c.threshold}</td>
+          <td class="${c.breach?'status-fail':'status-ok'}">${c.breach?'⚠ BREACH':'✓ OK'}</td>
+        </tr>`).join('')}
+      </table>
+      <div class="log-sub" style="margin-top:4px"><span class="log-sub-key">Signal sent:</span>
+      <span class="log-sub-val">${entry.type==='disrupt'?'DisruptionReport':'RecoveryReport'} → Coordinator</span></div>`;
+  }
+  else if(entry.type==='signal'){
+    bodyHtml=`<div class="log-sub"><span class="log-sub-key">From:</span>
+      <span class="log-sub-val">${entry.fromTier} → Coordinator Agent</span></div>
+      <div class="log-sub"><span class="log-sub-key">Report type:</span>
+      <span class="log-sub-val">${entry.reportType}</span></div>`;
+  }
+  else if(entry.type==='rule'){
+    bodyHtml=`<div class="log-sub"><span class="log-sub-key">Pattern:</span>
+      <span class="log-sub-val mono">${entry.pattern}</span></div>
+      <div class="log-sub"><span class="log-sub-key">Rule matched:</span>
+      <span class="log-sub-val"><strong style="color:var(--blue)">${entry.ruleId}</strong> — ${entry.ruleLbl}</span></div>
+      <div class="log-sub"><span class="log-sub-key">Urgency:</span>
+      <span class="log-sub-val"><span class="rule-urg-disp ${{'crisis':'ru-c','high':'ru-h','normal':'ru-n'}[entry.urg]}" style="font-size:9px">${entry.urg.toUpperCase()}</span></span></div>`;
+  }
+  else if(entry.type==='action'){
+    bodyHtml=`<div class="log-sub"><span class="log-sub-key">Mode:</span>
+      <span class="log-sub-val">${entry.mode==='hitl'?'HitL Advisory — instructions queued for manager review':'Autonomous — instructions executed immediately'}</span></div>
+      <table class="act-table" style="margin-top:4px">
+        <tr><th>Target Tier</th><th>Instruction</th><th>Execution</th></tr>
+        ${Object.entries(entry.actions||{}).map(([tier,instr])=>{
+          const t=TIERS.find(x=>x.key===tier);
+          return`<tr>
+            <td>${t?t.ic:''} ${t?t.lbl:tier}</td>
+            <td>${instr}</td>
+            <td>${entry.mode==='hitl'?'⏳ Pending manager review':'✓ Auto-executed'}</td>
+          </tr>`;
+        }).join('')}
+      </table>`;
+  }
+  else if(entry.type==='hitl'){
+    const dcls={'ACCEPT':'hdb-acc','MODIFY':'hdb-mod','OVERRIDE':'hdb-ov','TIMEOUT':'hdb-to'}[entry.dec];
+    const decExp={
+      ACCEPT:'Manager agreed — instruction executed at 100%',
+      MODIFY:`Manager modified — instruction executed at ${Math.round(entry.factor*100)}% (more conservative)`,
+      OVERRIDE:`Manager overrode — local policy applied at ${Math.round(entry.factor*100)}% only`,
+      TIMEOUT:'Manager did not respond in time — system auto-accepted at 100%',
+    }[entry.dec];
+    bodyHtml=`<div class="hitl-detail">
+      <div class="hitl-dec-row">
+        <span style="font-size:14px">${entry.tierIcon}</span>
+        <strong style="font-size:11px;color:var(--text)">${entry.tierName} Manager</strong>
+        <span class="hitl-dec-badge ${dcls}">${entry.dec}</span>
+      </div>
+      <div class="log-sub"><span class="log-sub-key">Rule reviewed:</span>
+        <span class="log-sub-val"><strong style="color:var(--blue)">${entry.ruleId}</strong></span></div>
+      <div class="log-sub"><span class="log-sub-key">Instruction:</span>
+        <span class="log-sub-val">${entry.instruction}</span></div>
+      <div class="hitl-exp">${decExp}</div>
+      <div class="hitl-meta">
+        <span>Response time: <span class="mv">${entry.hrt.toFixed(1)}h</span></span>
+        <span>Execution factor: <span class="mv">×${entry.factor.toFixed(2)}</span></span>
+        <span>HRT limit: <span class="mv">${MANAGERS[entry.tier]?.hrt||'—'}h</span></span>
+      </div>
+    </div>`;
+  }
+  else if(entry.type==='coord'){
+    bodyHtml=`<div class="log-sub"><span class="log-sub-key">SC Pattern:</span>
+      <span class="log-sub-val mono">(S:${entry.pattern?.[0]}, F:${entry.pattern?.[1]}, SH:${entry.pattern?.[2]}, WS:${entry.pattern?.[3]}, R:${entry.pattern?.[4]})</span></div>
+      <div class="log-sub"><span class="log-sub-key">Disrupted:</span>
+      <span class="log-sub-val">${entry.disruptedTiers&&entry.disruptedTiers.length?entry.disruptedTiers.join(', '):'None'}</span></div>
+      <div class="log-sub"><span class="log-sub-key">Rule matched:</span>
+      <span class="log-sub-val"><strong style="color:var(--blue)">${entry.ruleId}</strong> — ${entry.ruleLbl}</span></div>
+      <div class="log-sub"><span class="log-sub-key">Instructions to:</span>
+      <span class="log-sub-val">${Object.keys(entry.actions||{}).map(k=>{const t=TIERS.find(x=>x.key===k);return t?t.lbl:k}).join(', ')||'None'}</span></div>
+      ${Object.keys(entry.actions||{}).length>0?`<table class="act-table" style="margin-top:4px">
+        <tr><th>Target Tier</th><th>Instruction Dispatched</th></tr>
+        ${Object.entries(entry.actions).map(([tier,instr])=>{const t=TIERS.find(x=>x.key===tier);return`<tr><td>${t?t.ic+' '+t.lbl:tier}</td><td>${instr}</td></tr>`;}).join('')}
+      </table>`:''}`;
+  }
+
+  return`<div class="log-entry">
+    <div class="le-header">
+      <span class="le-time">H+${entry.h}</span>
+      ${tagHtml}
+      <span class="le-title">${entry.title}</span>
+    </div>
+    <div class="le-body">${bodyHtml}</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   LOG HELPERS
+══════════════════════════════════════════════════════ */
+function addLog(tab, entry){
+  if(!S.logs[tab]) S.logs[tab]=[];
+  S.logs[tab].push(entry);
+  if(S.currentTab===tab) renderLog(tab);
+}
+
+function addCoordLog(ev, ruleObj, pattern){
+  const disruptedTiers=TIERS.filter((_,i)=>pattern[i]===1).map(t=>t.lbl);
+  addLog('coord',{
+    h:ev.h, type:'coord', typeLabel:'COORDINATOR',
+    title:`Pattern matched → ${ruleObj.id} (${ruleObj.urg.toUpperCase()})`,
+    pattern, disruptedTiers, ruleId:ruleObj.id, ruleLbl:ruleObj.lbl,
+    urg:ruleObj.urg, actions:ruleObj.actions||{}
+  });
+}
+
+function addTierScanLog(tier, ev){
+  const t=TIERS.find(x=>x.key===tier);
+  addLog(tier,{
+    h:ev.h, type:'scan', typeLabel:'SCAN',
+    title:`${t?.lbl} scheduled scan (every ${t?.scan})`,
+    tierLabel:t?.lbl, scan:t?.scan,
+    dbState:ev.dbChanges||{},
+    checks:ev.threshChecks||[]
+  });
+}
+
+function addTierEventLog(tier, ev){
+  addLog(tier,{
+    h:ev.h,
+    type:ev.type==='RECOVER'?'recover':'disrupt',
+    typeLabel:ev.type==='RECOVER'?'RECOVERY':'DISRUPTION',
+    title:ev.type==='RECOVER'
+      ?`Recovery condition met — sending RecoveryReport to Coordinator`
+      :`Disruption threshold exceeded — sending DisruptionReport to Coordinator`,
+    desc:ev.desc, checks:ev.threshChecks||[], dbState:ev.dbChanges||{}
+  });
+}
+
+function addHitlLog(tier, ruleId, instr, dec, hrt, factor){
+  const t=TIERS.find(x=>x.key===tier);
+  addLog(tier,{
+    h:S.sc?.events[Math.min(S.step-1,S.sc.events.length-1)]?.h||0,
+    type:'hitl', typeLabel:'HitL',
+    title:`${t?.lbl} Manager reviewed instruction from Coordinator`,
+    tier, tierIcon:t?.ic||'👤', tierName:t?.lbl||tier,
+    ruleId, instruction:instr, dec, hrt, factor
+  });
+}
+
+function addActionLog(ev, ruleObj){
+  const actions=ruleObj?.actions||{};
+  if(Object.keys(actions).length===0) return;
+  addLog('coord',{
+    h:ev.h, type:'action', typeLabel:'DISPATCH',
+    title:`Instructions dispatched to ${Object.keys(actions).length} tier(s) [${S.mode.toUpperCase()}]`,
+    actions, mode:S.mode
+  });
+  // Also add to each target tier's log
+  Object.entries(actions).forEach(([tier,instr])=>{
+    addLog(tier,{
+      h:ev.h, type:'action', typeLabel:'INSTRUCTION',
+      title:`Coordinator instruction received (${ruleObj.id})`,
+      actions:{[tier]:instr}, mode:S.mode
+    });
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   SIMULATION
+══════════════════════════════════════════════════════ */
+function setGS(type,txt){
+  const el=document.getElementById('gstatus');
+  el.className='spill sp-'+type;
+  document.getElementById('stxt').textContent=txt;
+}
+
+function runSim(){
+  if(!S.sc){alert('Please select a scenario first.');return}
+  if(S.running&&!S.paused)return;
+  if(S.paused){S.paused=false;document.getElementById('btn-pause').textContent='⏸';return}
+
+  S.running=true;S.paused=false;S.step=0;S.sarHist=[];
+  S.tiers={supplier:0,farm:0,slaughterhouse:0,wholesaler:0,retail:0};
+  S.activeRule=null;
+  S.logs={coord:[],supplier:[],farm:[],slaughterhouse:[],wholesaler:[],retail:[]};
+
+  document.getElementById('pw').style.display='block';
+  document.getElementById('btn-run').textContent='▶ Running…';
+  document.getElementById('btn-run').disabled=true;
+  document.getElementById('btn-pause').disabled=false;
+  setGS('warn','Running');
+  renderMap();
+  switchTab(S.currentTab);
+  updateCurrentStatus(null,null,null);
+
+  // Add initial coordinator log entry
+  addLog('coord',{h:0,type:'coord',typeLabel:'COORDINATOR',
+    title:'Simulation started — system at normal state',
+    pattern:[0,0,0,0,0],disruptedTiers:[],ruleId:'R1',ruleLbl:'Not Disruption — all clear',
+    urg:'normal',actions:{}});
+
+  if(S.timer)clearInterval(S.timer);
+
+  S.timer=setInterval(()=>{
+    if(S.paused)return;
+    if(S.step>=S.sc.events.length){finishSim();return}
+
+    const ev=S.sc.events[S.step++];
+    const ruleObj=RULES.find(r=>r.id===ev.rule)||RULES[0];
+
+    // Update tier state
+    if(ev.type==='RECOVER') S.tiers[ev.node]=0;
+    else S.tiers[ev.node]=2;
+
+    // Build pattern
+    const pattern=TIERS.map(t=>S.tiers[t.key]);
+
+    // Update tier thresholds in map
+    const tierDef=TIERS.find(t=>t.key===ev.node);
+    if(tierDef&&ev.dbChanges){
+      tierDef.vars.forEach(v=>{
+        if(ev.dbChanges[v.k]) v.val=ev.dbChanges[v.k];
+        const check=ev.threshChecks?.find(c=>c.var===v.k);
+        if(check) v.ok=!check.breach;
+      });
+    }
+
+    renderMap();
+
+    // Update header
+    document.getElementById('h-rule').textContent=(S.mode==='autonomous'||S.mode==='hitl')?ev.rule:'—';
+    document.getElementById('h-ev').textContent='H+'+ev.h;
+    document.getElementById('h-tiers').textContent=(5-Object.values(S.tiers).filter(v=>v>0).length)+'/5';
+
+    // LOGS: Tier scan + event
+    addTierScanLog(ev.node, ev);
+    addTierEventLog(ev.node, ev);
+
+    // Coordinator log
+    let hitlDecisions={};
+    if(S.mode==='autonomous'||S.mode==='hitl'){
+      addCoordLog(ev, ruleObj, pattern);
+      addActionLog(ev, ruleObj);
+
+      // HitL decisions
+      if(S.mode==='hitl'){
+        const actions=ruleObj.actions||{};
+        Object.entries(actions).forEach(([tier,instr])=>{
+          const urg=ruleObj.urg;
+          const d=getDecision(tier,urg);
+          hitlDecisions[tier]=d;
+          setTimeout(()=>{
+            addHitlLog(tier,ev.rule,instr,d.dec,d.hrt,d.factor);
+            if(S.currentTab===tier||S.currentTab==='coord') renderLog(S.currentTab);
+          },600+Object.keys(actions).indexOf(tier)*400);
+        });
+      }
+    } else {
+      // Baseline / Reactive: add simple log
+      addLog(ev.node,{h:ev.h,type:'scan',typeLabel:'SCAN',
+        title:`${tierDef?.lbl} scan — no coordination signal sent (${S.mode} mode)`,
+        tierLabel:tierDef?.lbl,scan:tierDef?.scan,dbState:ev.dbChanges||{},checks:ev.threshChecks||[]});
+    }
+
+    updateCurrentStatus(ev, ev.rule, hitlDecisions);
+
+    // SAR
+    const res=S.sc.res;
+    const fSAR=S.mode==='reactive'?res.r:S.mode==='hitl'?res.h:S.mode==='baseline'?(res.r*.6):res.a;
+    const prog=S.step/S.sc.events.length;
+    const sarNow=ev.type==='RECOVER'?Math.min(fSAR,fSAR*prog*1.4):Math.max(3,fSAR*prog*.55);
+    document.getElementById('h-sar').textContent=sarNow.toFixed(1)+'%';
+
+    // Progress
+    const pct=Math.round(S.step/S.sc.events.length*100);
+    document.getElementById('pf').style.width=pct+'%';
+    document.getElementById('ppct').textContent=pct+'%';
+
+    const ndis=Object.values(S.tiers).filter(v=>v>0).length;
+    if(ndis>=4)setGS('crit',`CRISIS — ${ndis} tiers`);
+    else if(ndis>0)setGS('warn',`Disrupted — ${ndis} tier${ndis>1?'s':''}`);
+
+    // Refresh current tab
+    renderLog(S.currentTab);
+
+  }, SPEEDS[S.spd]);
+}
+
+function finishSim(){
+  clearInterval(S.timer);S.running=false;
+  const res=S.sc.res;const m=S.mode;
+  const fSAR=m==='reactive'?res.r:m==='hitl'?res.h:m==='baseline'?(res.r*.6):res.a;
+  const fTTR=m==='hitl'?res.ttr_h:res.ttr_a;
+  const fSOD=m==='reactive'?res.sod_r:m==='hitl'?res.sod_h:m==='baseline'?(res.sod_r*1.2):res.sod_a;
+
+  document.getElementById('h-sar').textContent=fSAR!=null?fSAR.toFixed(1)+'%':'—';
+  document.getElementById('h-tiers').textContent='5/5';
+  S.tiers={supplier:0,farm:0,slaughterhouse:0,wholesaler:0,retail:0};
+  renderMap();
+
+  // Final coordinator log
+  // Add final coord log
+  addLog('coord',{h:S.sc.dur,type:'coord',typeLabel:'COORDINATOR',
+    title:`Simulation complete — Final SAR: ${fSAR?.toFixed(1)||'—'}% | TTR: ${fTTR||'—'}h | SOD: ${fSOD||'—'}h`,
+    pattern:[0,0,0,0,0],disruptedTiers:[],ruleId:'R1',ruleLbl:'System returned to normal',
+    urg:'normal',actions:{}});
+
+  // Add summary entries for all tabs
+  const summaryTabs = ['coord',...TIERS.map(t=>t.key)];
+  summaryTabs.forEach(tab=>{
+    const t = TIERS.find(x=>x.key===tab);
+    addLog(tab,{
+      h:S.sc.dur, type:'summary', typeLabel:'SUMMARY',
+      title:'Simulation Summary',
+      tierLabel: t?t.lbl:'Coordinator',
+      tierIcon: t?t.ic:'🧠',
+    });
+  });
+
+  renderLog(S.currentTab);
+
+  document.getElementById('btn-run').textContent='▶ Run Simulation';
+  document.getElementById('btn-run').disabled=false;
+  document.getElementById('btn-pause').disabled=true;
+  document.getElementById('pf').style.width='100%';
+  document.getElementById('ppct').textContent='100%';
+  setGS('ok','Complete');
+  updateCurrentStatus(null,'R1',null);
+}
+
+function pauseSim(){
+  if(!S.running)return;
+  S.paused=!S.paused;
+  document.getElementById('btn-pause').textContent=S.paused?'▶':'⏸';
+  setGS(S.paused?'idle':'warn',S.paused?'Paused':'Running');
+}
+
+function resetSim(){
+  clearInterval(S.timer);
+  Object.assign(S,{running:false,paused:false,step:0,sarHist:[],
+    tiers:{supplier:0,farm:0,slaughterhouse:0,wholesaler:0,retail:0},activeRule:null,
+    logs:{coord:[],supplier:[],farm:[],slaughterhouse:[],wholesaler:[],retail:[]}});
+  // Reset tier values to defaults
+  TIERS.forEach(t=>t.vars.forEach(v=>{v.ok=true}));
+  ['h-sar','h-rule','h-ev'].forEach(id=>document.getElementById(id).textContent='—');
+  document.getElementById('h-tiers').textContent='5/5';
+  document.getElementById('btn-run').textContent='▶ Run Simulation';
+  document.getElementById('btn-run').disabled=false;
+  document.getElementById('btn-pause').disabled=true;
+  document.getElementById('btn-pause').textContent='⏸';
+  document.getElementById('pf').style.width='0%';
+  document.getElementById('ppct').textContent='0%';
+  document.getElementById('pw').style.display='none';
+  setGS('idle','Idle');
+  renderMap();
+  updateCurrentStatus(null,null,null);
+  renderLog(S.currentTab);
+}
+
+function setSpd(v){
+  S.spd=v;
+  document.querySelectorAll('.spd-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('sp-'+v).classList.add('active');
+}
+
+/* BOOT */
+window.addEventListener('load',()=>{
+  loadDemo();
+  setMode('autonomous');
+  popSel();
+  renderLog('coord');
+});
+
+
+/* ══════════════════════════════════════════════════════════
+   LOG RENDERER — Narrative-first, human-readable logs
+   For high-level users: tells the story, not just data
+══════════════════════════════════════════════════════════ */
+
+/* ── CARD BUILDER ─────────────────────────────────────── */
+function makeCard(h, badgeClass, badgeText, title, accent, bodyHtml) {
+  return `
+  <div class="lc">
+    <div class="lc-inner">
+      <div class="lc-acc" style="background:${accent}"></div>
+      <div class="lc-body">
+        <div class="lc-head">
+          <span class="lc-time">H+${h}</span>
+          <span class="lc-badge ${badgeClass}">${badgeText}</span>
+          <span class="lc-title">${title}</span>
+        </div>
+        ${bodyHtml}
+      </div>
+    </div>
+  </div>`;
+}
+
+function phaseBanner(cls, icon, text) {
+  return `<div class="phase-banner ${cls}">${icon}&nbsp; ${text}</div>`;
+}
+
+/* ── THRESHOLD CHECK CARD ─────────────────────────────── */
+function renderThresholdCard(entry) {
+  const breached = (entry.checks||[]).filter(c=>c.breach);
+  const ok       = (entry.checks||[]).filter(c=>!c.breach);
+
+  const narrative = entry.type === 'recover'
+    ? `<p class="lc-narrative">
+        At <strong>H+${entry.h}</strong>, the <strong>${entry.tierLabel}</strong> agent completed its
+        scheduled scan and detected that <span class="hi-green">all threshold conditions have been met
+        for recovery</span>. The system values have returned above the recovery threshold, confirming
+        that the disruption has resolved. A <span class="hi-teal">RecoveryReport</span> is now sent
+        to the Coordinating Agent to update the global supply chain pattern.
+      </p>`
+    : breached.length > 0
+      ? `<p class="lc-narrative">
+          At <strong>H+${entry.h}</strong>, the <strong>${entry.tierLabel}</strong> agent performed
+          its scheduled monitoring scan (every ${entry.scan}). The scan detected
+          <span class="hi-red">${breached.length} threshold violation${breached.length>1?'s':''}</span>
+          that ${breached.length>1?'indicate':'indicates'} a disruption condition:
+          ${breached.map(c=>`<strong>${c.var}</strong> is <span class="mono hi-red">${c.val}</span>
+          (limit: ${c.threshold})`).join(', ')}.
+          This triggers a <span class="hi-teal">DisruptionReport</span> to the Coordinating Agent.
+        </p>`
+      : `<p class="lc-narrative">
+          At <strong>H+${entry.h}</strong>, the <strong>${entry.tierLabel}</strong> agent completed
+          its scheduled monitoring scan. <span class="hi-green">All variables are within normal
+          thresholds</span> — no disruption detected. No signal sent.
+        </p>`;
+
+  const tableRows = (entry.checks||[]).map(c => `
+    <tr>
+      <td><strong>${c.var}</strong></td>
+      <td class="${c.breach?'td-val-fail':'td-val-ok'}">${c.val}</td>
+      <td>${c.threshold}</td>
+      <td class="${c.breach?'td-fail':'td-ok'}">${c.breach?'⚠ VIOLATED':'✓ OK'}</td>
+    </tr>`).join('');
+
+  const body = `
+    ${narrative}
+    ${(entry.checks||[]).length > 0 ? `
+    <table class="lc-table">
+      <tr><th>Variable monitored</th><th>Current value</th><th>Allowed limit</th><th>Status</th></tr>
+      ${tableRows}
+    </table>` : ''}`;
+
+  const isRecover = entry.type === 'recover';
+  const hasBreach = breached.length > 0;
+  const accentColor = isRecover ? 'var(--green)' : hasBreach ? 'var(--red)' : 'var(--teal)';
+  const badgeCls   = isRecover ? 'lb-recovery' : hasBreach ? 'lb-threshold' : 'lb-signal';
+  const badgeTxt   = isRecover ? 'THRESHOLD MET' : hasBreach ? 'THRESHOLD VIOLATED' : 'ALL NORMAL';
+  const titleTxt   = isRecover
+    ? `${entry.tierLabel} — Recovery conditions confirmed ✓`
+    : hasBreach
+      ? `${entry.tierLabel} — ${breached.length} violation${breached.length>1?'s':''} detected → DisruptionReport sent`
+      : `${entry.tierLabel} — Scheduled scan completed, all normal`;
+
+  return makeCard(entry.h, badgeCls, badgeTxt, titleTxt, accentColor, body);
+}
+
+/* ── COORDINATOR RULE MATCH CARD ──────────────────────── */
+function renderRuleCard(entry) {
+  const ruleObj = RULES.find(r=>r.id===entry.ruleId) || {};
+  const urgColor = {crisis:'var(--red)',high:'var(--amber)',normal:'var(--teal)'}[entry.urg||'normal'];
+  const urgBg = {crisis:'var(--red-bg)',high:'var(--amb-bg)',normal:'var(--teal-bg)'}[entry.urg||'normal'];
+
+  const dispatchedTiers = Object.keys(entry.actions||{});
+  const tierList = dispatchedTiers.map(k=>{
+    const t=TIERS.find(x=>x.key===k); return t?`${t.ic} ${t.lbl}`:k;
+  }).join(', ');
+
+  const body = `
+    <p class="lc-narrative">
+      The Coordinating Agent received a report from
+      <strong>${entry.fromTier||'a tier agent'}</strong>
+      and updated the global supply chain status pattern to
+      <span class="mono hi-blue">${entry.pattern?entry.pattern.join(','):'—'}</span>
+      (Supplier, Farm, Slaughter, Wholesaler, Retail — 0=normal, 1=disrupted).
+      <br><br>
+      Pattern matching against the 18-rule library returned
+      <span class="hi-gold">${entry.ruleId} — "${ruleObj.lbl||entry.ruleLbl}"</span>
+      with urgency level <span style="font-weight:700;color:${urgColor}">${(entry.urg||'normal').toUpperCase()}</span>.
+      ${dispatchedTiers.length > 0
+        ? `The coordinator will now dispatch instructions to
+           <strong>${dispatchedTiers.length} tier${dispatchedTiers.length>1?'s':''}</strong>:
+           ${tierList}.`
+        : 'No instructions required at this state.'}
+    </p>
+
+    <div class="rule-flow">
+      <span class="rf-node rf-tier">${entry.fromTier||'Tier'}</span>
+      <span class="rf-arrow">→</span>
+      <span class="rf-node rf-signal">DisruptionReport</span>
+      <span class="rf-arrow">→</span>
+      <span class="rf-node rf-rule">${entry.ruleId}</span>
+      <span style="font-size:9px;color:var(--text3);padding:0 4px">${ruleObj.lbl||''}</span>
+      ${dispatchedTiers.length>0 ? `<span class="rf-arrow">→</span>
+      <span class="rf-node rf-action">Dispatch to ${dispatchedTiers.length} tier${dispatchedTiers.length>1?'s':''}</span>` : ''}
+    </div>`;
+
+  return makeCard(entry.h, 'lb-rule', 'RULE MATCHED',
+    `Coordinator → Pattern (${entry.pattern?.join(',')}) → ${entry.ruleId} (${(entry.urg||'normal').toUpperCase()})`,
+    urgColor, body);
+}
+
+/* ── ACTION DISPATCH CARD ─────────────────────────────── */
+function renderActionCard(entry) {
+  const isMas = entry.mode === 'autonomous' || entry.mode === 'hitl';
+  const actions = entry.actions || {};
+  const tierCount = Object.keys(actions).length;
+
+  const body = `
+    <p class="lc-narrative">
+      ${isMas
+        ? `The Coordinating Agent dispatched <strong>${tierCount} executable instruction${tierCount>1?'s':''}</strong>
+           to the affected tiers.
+           ${entry.mode==='hitl'
+             ? `In <span class="hi-purple">HitL Advisory mode</span>, each instruction is first
+                reviewed by the respective tier manager (Accept / Modify / Override / Timeout)
+                before execution. A delay equal to the manager's response time (HRT) is applied.`
+             : `In <span class="hi-blue">Autonomous mode</span>, instructions are executed
+                immediately without human review.`}`
+        : `In <span class="hi-amber">${entry.mode} mode</span>, no coordinator instructions are sent.
+           Each tier acts on its own fixed policy.`}
+    </p>
+
+    ${tierCount > 0 ? `
+    <table class="lc-table">
+      <tr><th>Target tier</th><th>Instruction from coordinator</th>
+          <th>${entry.mode==='hitl'?'Manager review':'Execution'}</th></tr>
+      ${Object.entries(actions).map(([tier,instr])=>{
+        const t=TIERS.find(x=>x.key===tier);
+        const mgr = MANAGERS[tier];
+        return `<tr>
+          <td>${t?`${t.ic} <strong>${t.lbl}</strong>`:tier}</td>
+          <td>${instr}</td>
+          <td>${entry.mode==='hitl'
+            ? `⏳ Pending — <span style="color:var(--text3);font-size:9px">${mgr?'HRT up to '+mgr.hrt+'h':'—'}</span>`
+            : '<span class="td-ok">✓ Auto-executed</span>'}</td>
+        </tr>`;
+      }).join('')}
+    </table>` : ''}`;
+
+  return makeCard(entry.h, 'lb-action', 'INSTRUCTIONS DISPATCHED',
+    `${tierCount} instruction${tierCount>1?'s':''} sent [${(entry.mode||'').toUpperCase()}]`,
+    'var(--amber)', body);
+}
+
+/* ── HITL DECISION CARD ───────────────────────────────── */
+function renderHitlCard(entry) {
+  const decMap = {
+    ACCEPT: {
+      pill:'hp-acc', color:'var(--green)',
+      headline:'Manager accepted the coordinator\'s instruction in full.',
+      explain:`The <strong>${entry.tierName} Manager</strong> reviewed the instruction and
+               agreed with the coordinator's recommendation.
+               The instruction will be executed at
+               <span class="hi-ok">100% of the specified level</span>.
+               Response time was ${entry.hrt?.toFixed(1)}h (within the ${MANAGERS[entry.tier]?.hrt}h limit).`
+    },
+    MODIFY: {
+      pill:'hp-mod', color:'var(--amber)',
+      headline:`Manager accepted but reduced the instruction to ${Math.round((entry.factor||1)*100)}%.`,
+      explain:`The <strong>${entry.tierName} Manager</strong> agreed with the coordinator's direction
+               but judged the intensity to be too aggressive for current local conditions.
+               The instruction will be executed at
+               <span class="hi-amber">${Math.round((entry.factor||1)*100)}% of the specified level</span>.
+               This reflects the manager's domain knowledge about on-the-ground constraints.`
+    },
+    OVERRIDE: {
+      pill:'hp-ov', color:'var(--red)',
+      headline:`Manager overrode — applying local policy at ${Math.round((entry.factor||1)*100)}% only.`,
+      explain:`The <strong>${entry.tierName} Manager</strong> disagreed with the coordinator's instruction
+               and applied their own local policy instead. The instruction will be executed at only
+               <span class="hi-bad">${Math.round((entry.factor||1)*100)}% of the specified level</span>.
+               This may reduce coordination effectiveness but reflects the manager's authority
+               over their tier. Override rate for this tier is typically ${MANAGERS[entry.tier]?.pOvr?Math.round(MANAGERS[entry.tier].pOvr*100)+'%':'—'}.`
+    },
+    TIMEOUT: {
+      pill:'hp-to', color:'var(--text3)',
+      headline:'Manager did not respond — system auto-accepted the instruction.',
+      explain:`The <strong>${entry.tierName} Manager</strong> did not respond within the
+               ${MANAGERS[entry.tier]?.hrt}h time limit.
+               The system automatically accepted and executed the instruction at
+               <span class="hi-ok">100% level</span> to prevent further delay
+               in supply chain coordination.`
+    },
+  };
+
+  const dc = decMap[entry.dec] || decMap.ACCEPT;
+
+  const body = `
+    <div class="hitl-card">
+      <div class="hitl-card-head">
+        <span style="font-size:15px">${entry.tierIcon||'👤'}</span>
+        <strong style="font-size:11px;color:var(--text)">${entry.tierName} Manager</strong>
+        <span style="font-size:9.5px;color:var(--text3)">reviewing instruction from</span>
+        <span style="font-family:'Space Mono',monospace;font-size:9.5px;color:var(--blue)">${entry.ruleId}</span>
+        <span class="hitl-dec-pill ${dc.pill}" style="margin-left:auto">${entry.dec}</span>
+      </div>
+
+      <div class="log-sub" style="margin-bottom:5px">
+        <span style="font-size:9.5px;color:var(--text3);min-width:110px;flex-shrink:0">Instruction reviewed:</span>
+        <span style="font-size:9.5px;color:var(--text2)">${entry.instruction||'—'}</span>
+      </div>
+
+      <div class="hitl-explain">${dc.explain}</div>
+
+      <div class="hitl-metrics">
+        <span>Response time: <span class="mv">${entry.hrt?.toFixed(1)||'—'}h</span></span>
+        <span>Execution factor: <span class="mv">×${entry.factor?.toFixed(2)||'1.00'}</span></span>
+        <span>P(Accept) for this tier: <span class="mv">${MANAGERS[entry.tier]?Math.round(MANAGERS[entry.tier].pAcc*100)+'%':'—'}</span></span>
+      </div>
+    </div>`;
+
+  return makeCard(entry.h, 'lb-hitl', 'HitL DECISION',
+    `${entry.tierName} Manager → ${entry.dec}`,
+    dc.color, body);
+}
+
+/* ── SUMMARY CARD ─────────────────────────────────────── */
+function renderSummaryCard(tier, tierLabel, tierIcon, logs, sc, mode) {
+  const events = (sc?.events||[]).filter(e=>e.node===tier||tier==='coord');
+  const res = sc?.res;
+  const fSAR  = mode==='reactive'?res?.r : mode==='hitl'?res?.h : mode==='baseline'?(res?.r*.6) : res?.a;
+  const fTTR  = mode==='hitl'?res?.ttr_h : res?.ttr_a;
+  const fSOD  = mode==='reactive'?res?.sod_r : mode==='hitl'?res?.sod_h : mode==='baseline'?(res?.sod_r*1.2) : res?.sod_a;
+  const fSODr = res?.sod_r;
+
+  const disruptEvents = events.filter(e=>e.type!=='RECOVER');
+  const recoverEvents = events.filter(e=>e.type==='RECOVER');
+
+  // Build timeline items
+  let timelineItems = '';
+  if(tier==='coord') {
+    // Show all events
+    (sc?.events||[]).forEach(ev=>{
+      const t=TIERS.find(x=>x.key===ev.node);
+      const dotColor = ev.type==='RECOVER'?'var(--green)':ev.type==='ONSET'?'var(--red)':'var(--amber)';
+      timelineItems += `
+      <div class="stl-item">
+        <div class="stl-dot-col">
+          <div class="stl-dot" style="background:${dotColor}"></div>
+          <div class="stl-line"></div>
+        </div>
+        <div class="stl-content">
+          <div class="stl-time">H+${ev.h}</div>
+          <div class="stl-event">${t?t.ic+' '+t.lbl:'—'} — ${ev.type} → Rule ${ev.rule}</div>
+          <div class="stl-detail">${ev.desc}</div>
+        </div>
+      </div>`;
+    });
+  } else {
+    events.forEach(ev=>{
+      const dotColor = ev.type==='RECOVER'?'var(--green)':ev.type==='ONSET'?'var(--red)':'var(--amber)';
+      timelineItems += `
+      <div class="stl-item">
+        <div class="stl-dot-col">
+          <div class="stl-dot" style="background:${dotColor}"></div>
+          <div class="stl-line"></div>
+        </div>
+        <div class="stl-content">
+          <div class="stl-time">H+${ev.h}</div>
+          <div class="stl-event">${ev.type} → Rule <strong style="color:var(--blue)">${ev.rule}</strong></div>
+          <div class="stl-detail">${ev.desc}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  // Narrative for coord
+  const isCoord = tier === 'coord';
+  const narrative = isCoord
+    ? `During this <strong>${sc?.sev?.toUpperCase()||'—'} severity</strong> simulation,
+       the Coordinating Agent processed <strong>${(sc?.events||[]).length} disruption and recovery events</strong>
+       across ${sc?.cascade?.length||0} tiers over <strong>${sc?.dur||0} hours</strong>.
+       The rule engine matched multiple binary patterns against the 18-rule library,
+       dispatching coordination instructions to prevent further cascade deterioration.
+       <br><br>
+       <span class="hi-key">Mode used: ${mode.toUpperCase()}.</span>
+       ${mode==='autonomous'
+         ? ' Instructions were executed immediately without human delay.'
+         : mode==='hitl'
+           ? ' Each instruction was reviewed by the tier manager before execution, adding HRT delay but improving contextual accuracy.'
+           : mode==='reactive'
+             ? ' No coordinator was active — tiers responded with fixed reorder policy only.'
+             : ' No coordination or supply flow amplification occurred.'}
+       <br><br>
+       Final outcome: SAR = <span class="${fSAR>=50?'hi-ok':'hi-bad'}">${fSAR?.toFixed(1)||'—'}%</span>
+       ${res?.r!=null&&!isNaN(fSAR)&&fSAR!==res.r
+         ? `(vs. Reactive Baseline: ${res.r?.toFixed(1)}% — improvement of
+            <span class="hi-ok">+${(fSAR-res.r).toFixed(1)}%</span>)`:''}
+       | TTR = <strong>${fTTR||'—'}h</strong>
+       | SOD = <strong>${fSOD||'—'}h</strong>`
+    : disruptEvents.length === 0
+      ? `The <strong>${tierLabel}</strong> tier was <span class="hi-ok">not directly disrupted</span>
+         during this simulation. It continued operating within normal thresholds throughout the
+         ${sc?.dur||'—'}-hour scenario.
+         ${mode==='autonomous'||mode==='hitl'
+           ? ` However, it received coordination instructions from the Coordinating Agent as part of
+               upstream or downstream disruption response.`
+           : ''}`
+      : `The <strong>${tierLabel}</strong> tier experienced
+         <span class="hi-bad">${disruptEvents.length} disruption event${disruptEvents.length>1?'s':''}</span>
+         during this simulation, first detected at <strong>H+${disruptEvents[0]?.h||'—'}</strong>.
+         ${recoverEvents.length>0
+           ? `Recovery was confirmed at <strong>H+${recoverEvents[recoverEvents.length-1]?.h||'—'}</strong>,
+              giving a total disruption window of
+              <strong>${(recoverEvents[recoverEvents.length-1]?.h||0)-(disruptEvents[0]?.h||0)} hours</strong>.`
+           : 'Recovery had not yet been confirmed by the end of the simulation.'}
+         <br><br>
+         ${mode==='autonomous'||mode==='hitl'
+           ? `The Coordinating Agent responded by dispatching instructions to this tier and related tiers.
+              ${mode==='hitl'?'The tier manager reviewed and actioned these instructions through the HitL advisory process.':''}`
+           : `In ${mode} mode, no coordinator instructions were received — the tier responded with its fixed local policy only.`}`;
+
+  const metricsHtml = isCoord ? `
+    <div class="sum-metrics">
+      <div class="sm-tile">
+        <div class="sm-val">${fSAR?.toFixed(1)||'—'}%</div>
+        <div class="sm-lbl">Final SAR</div>
+        ${res?.r!=null&&fSAR!=null ? `<div class="sm-delta ${fSAR>res.r?'d-pos':'d-neg'}">${fSAR>res.r?'+':''}${(fSAR-res.r).toFixed(1)}% vs Reactive</div>` : ''}
+      </div>
+      <div class="sm-tile">
+        <div class="sm-val">${fTTR||'—'}h</div>
+        <div class="sm-lbl">Time to Recovery</div>
+      </div>
+      <div class="sm-tile">
+        <div class="sm-val">${fSOD||'—'}h</div>
+        <div class="sm-lbl">Stockout Duration</div>
+        ${fSODr!=null&&fSOD!=null ? `<div class="sm-delta ${fSOD<fSODr?'d-pos':'d-neg'}">${fSOD<fSODr?'−':'+'}${Math.abs(fSOD-fSODr)}h vs Reactive</div>` : ''}
+      </div>
+    </div>` : '';
+
+  return `
+  <div class="summary-card">
+    <div class="summary-header">
+      <div class="summary-ic">${isCoord?'🧠':tierIcon||'📋'}</div>
+      <div>
+        <div class="summary-title">
+          ${isCoord?'Coordinator':'Tier'} Summary — ${isCoord?'Full Supply Chain':tierLabel}
+        </div>
+        <div class="summary-subtitle">
+          ${sc?.name||'—'} · ${sc?.sev?.toUpperCase()||'—'} · ${sc?.dur||'—'}h · Mode: ${mode.toUpperCase()}
+        </div>
+      </div>
+    </div>
+    <div class="summary-body">
+      ${metricsHtml}
+
+      <div class="sum-timeline">
+        <div class="sum-tl-title">📍 Event timeline for this ${isCoord?'scenario':'tier'}</div>
+        ${timelineItems||'<div style="font-size:10px;color:var(--text3);padding:4px 0">No events recorded for this tier.</div>'}
+      </div>
+
+      <div class="sum-narrative">${narrative}</div>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   MAIN RENDER FUNCTION — replaces old renderLog()
+══════════════════════════════════════════════════════ */
+function renderLog(tab) {
+  const container = document.getElementById('log-content');
+  const logs = S.logs[tab] || [];
+
+  if (logs.length === 0) {
+    container.innerHTML = `<div class="empty-log">
+      <div class="empty-log-ic">📋</div>
+      No log entries yet for this agent.<br>
+      <span style="font-size:10px">Run simulation to generate logs.</span>
+    </div>`;
+    return;
+  }
+
+  // Group logs: summary last (or first in display = top)
+  const summaryEntries = logs.filter(e=>e.type==='summary');
+  const regularEntries = logs.filter(e=>e.type!=='summary');
+
+  let html = '';
+
+  // Summary at top if available
+  if (summaryEntries.length > 0) {
+    const sum = summaryEntries[summaryEntries.length - 1];
+    html += phaseBanner('pb-done', '📋', 'SIMULATION COMPLETE — SUMMARY');
+    html += renderSummaryCard(tab, sum.tierLabel, sum.tierIcon, logs, S.sc, S.mode);
+    html += phaseBanner('pb-onset', '📜', 'DETAILED EVENT LOG (chronological, most recent first)');
+  }
+
+  // Regular entries reversed (newest first)
+  const reversed = regularEntries.slice().reverse();
+  reversed.forEach((entry, idx) => {
+    // Phase banners
+    if (idx === 0 && regularEntries.length > 0 && !summaryEntries.length) {
+      html += phaseBanner('pb-start', '🟢', 'SIMULATION STARTED');
+    }
+
+    if (entry.type === 'scan' || entry.type === 'disrupt' || entry.type === 'recover') {
+      html += renderThresholdCard(entry);
+    } else if (entry.type === 'rule' || entry.type === 'coord') {
+      html += renderRuleCard({...entry, fromTier: TIERS.find(t=>t.key===entry.fromTier)?.lbl||entry.fromTier||'Tier'});
+    } else if (entry.type === 'action') {
+      html += renderActionCard(entry);
+    } else if (entry.type === 'hitl') {
+      html += renderHitlCard(entry);
+    }
+  });
+
+  container.innerHTML = html;
+}
+
+</script>
+</body>
+
+</html>

@@ -33,78 +33,98 @@ export const getRule = (ruleId) => request(`/rules/${ruleId}`);
 export const matchRule = (params) =>
   request(`/match-rule?${new URLSearchParams(params)}`);
 
-// ─── Scenarios ───────────────────────────────────────────
-export const getScenarios = () => request("/scenarios");
-export const getScenario = (id) => request(`/scenarios/${id}`);
-export const getScenarioEvents = (id) => request(`/scenarios/${id}/events`);
-
-// ─── Simulation ──────────────────────────────────────────
-export const simulateScenario = (body) =>
-  request("/simulate/scenario", { method: "POST", body: JSON.stringify(body) });
-export const simulateAll = (body = { verbose: false }) =>
-  request("/simulate/all", { method: "POST", body: JSON.stringify(body) });
-export const simulateCustom = (body) =>
-  request("/simulate/custom", { method: "POST", body: JSON.stringify(body) });
-
-// ─── Results (combined CSVs) ──────────────────────────────
-export const getMetrics = () => request("/results/metrics");
-
-export const getStockLog = (params = {}) => {
+// ─── Reactive Scenarios (100 scenarios via /hitl/scenarios) ──────────────────
+/**
+ * GET /hitl/scenarios — fetch all 100 reactive scenarios
+ * page_size=100 returns all at once
+ */
+export const getReactiveScenarios = (params = {}) => {
   const q = new URLSearchParams();
-  if (params.scenario_id != null) q.set("scenario_id", params.scenario_id);
-  if (params.node_type) q.set("node_type", params.node_type);
-  if (params.limit) q.set("limit", params.limit);
-  return request(`/results/stock-log?${q}`);
+  if (params.severity)        q.set("severity",        params.severity);
+  if (params.disruption_type) q.set("disruption_type", params.disruption_type);
+  q.set("page",      String(params.page      ?? 1));
+  q.set("page_size", String(params.page_size ?? 100));
+  return request(`/hitl/scenarios?${q}`);
 };
 
-export const getEventLog = (params = {}) => {
+export const getReactiveScenarioById = (id) => request(`/hitl/scenarios/${id}`);
+
+// ─── Reactive Simulation ─────────────────────────────────
+/**
+ * POST /hitl/simulate/scenario — mode fixed to "reactive"
+ * Supports AbortSignal for cancellation
+ */
+export const simulateReactiveScenario = (body, signal) =>
+  request("/hitl/simulate/scenario", {
+    method: "POST",
+    body: JSON.stringify({ ...body, mode: "reactive" }),
+    ...(signal ? { signal } : {}),
+  });
+
+// ─── Reactive Results ────────────────────────────────────
+export const getReactiveMetrics = (params = {}) => {
   const q = new URLSearchParams();
+  q.set("mode", "reactive");
+  if (params.severity)            q.set("severity",    params.severity);
   if (params.scenario_id != null) q.set("scenario_id", params.scenario_id);
-  if (params.rule_id) q.set("rule_id", params.rule_id);
-  if (params.urgency) q.set("urgency", params.urgency);
-  return request(`/results/event-log?${q}`);
+  return request(`/hitl/results/metrics?${q}`);
 };
 
-export const getSummary = () => request("/results/summary");
+export const getReactiveSummary = () =>
+  request("/hitl/results/summary?mode=reactive");
+
+export const getReactiveEventLog = (params = {}) => {
+  const q = new URLSearchParams();
+  q.set("mode", "reactive");
+  if (params.scenario_id != null) q.set("scenario_id", params.scenario_id);
+  if (params.rule_id)             q.set("rule_id",     params.rule_id);
+  if (params.limit)               q.set("limit",       String(params.limit));
+  return request(`/hitl/results/event-log?${q}`);
+};
+
+export const getReactiveStockLog = (params = {}) => {
+  const q = new URLSearchParams();
+  q.set("mode", "reactive");
+  if (params.scenario_id != null) q.set("scenario_id", params.scenario_id);
+  if (params.node_type)           q.set("node_type",   params.node_type);
+  if (params.limit)               q.set("limit",       String(params.limit));
+  return request(`/hitl/results/stock-log?${q}`);
+};
+
+// ─── Reactive CSV Management ─────────────────────────────
+export const getReactiveCsvList = () => request("/hitl/csv/list");
+
+export const getReactiveScenarioCsvJson = (scenarioId, datatype) =>
+  request(`/hitl/csv/scenario/${scenarioId}/json/${datatype}`);
+
+export function downloadReactiveCsv(filename) {
+  const a = document.createElement("a");
+  a.href = `${BASE_URL}/hitl/csv/download/${encodeURIComponent(filename)}`;
+  a.download = filename;
+  a.click();
+}
+
+export function downloadReactiveScenarioCsv(scenarioId, filename) {
+  const a = document.createElement("a");
+  a.href = `${BASE_URL}/hitl/csv/scenario/${scenarioId}/${encodeURIComponent(filename)}`;
+  a.download = filename;
+  a.click();
+}
+
+// ─── Legacy endpoints (used by Reports page) ─────────────
+export const getMetrics       = () => getReactiveMetrics();
+export const getSummary       = () => getReactiveSummary();
+export const getCsvList       = () => getReactiveCsvList();
+export const getScenarioCsvJson = (scenarioId, datatype) =>
+  getReactiveScenarioCsvJson(scenarioId, datatype);
+export const downloadCsv      = (filename) => downloadReactiveCsv(filename);
+export const downloadScenarioCsv = (scenarioId, filename) =>
+  downloadReactiveScenarioCsv(scenarioId, filename);
+
 export const getRuleFrequency = (scenarioId) =>
   request(`/results/rule-frequency${scenarioId != null ? `?scenario_id=${scenarioId}` : ""}`);
 export const getDecisionDistribution = (scenarioId) =>
   request(`/results/decision-distribution${scenarioId != null ? `?scenario_id=${scenarioId}` : ""}`);
 
-// ─── CSV Management ──────────────────────────────────────
-/** List all available CSV files in output/ */
-export const getCsvList = () => request("/csv/list");
-
-/**
- * Get per-scenario CSV data as JSON for charts/tables.
- * datatype: "metrics" | "stock_log" | "event_log"
- */
-export const getScenarioCsvJson = (scenarioId, datatype) => {
-  return request(`/csv/scenario/${scenarioId}/json/${datatype}`);
-};
-
-// src/api/simulationApi.js
-export const getDisruptionsSummary = () => request("/results/disruptions-per-scenario");
-
-/**
- * Trigger browser download of a combined CSV file.
- * filename: e.g. "scenario_metrics.csv", "stock_log_all.csv"
- */
-export function downloadCsv(filename) {
-  const a = document.createElement("a");
-  a.href = `${BASE_URL}/csv/download/${encodeURIComponent(filename)}`;
-  a.download = filename;
-  a.click();
-}
-
-/**
- * Trigger browser download of a per-scenario CSV file.
- * filename: e.g. "metrics.csv", "event_log.csv"
- * Backend endpoint expects integer scenario ID
- */
-export function downloadScenarioCsv(scenarioId, filename) {
-  const a = document.createElement("a");
-  a.href = `${BASE_URL}/csv/scenario/${scenarioId}/${encodeURIComponent(filename)}`;
-  a.download = filename;
-  a.click();
-}
+// Alias used by Dashboard
+export const getScenarios = () => getReactiveScenarios({ page_size: 100 });

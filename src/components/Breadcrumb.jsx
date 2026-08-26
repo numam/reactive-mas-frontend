@@ -1,13 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 
 const routeNames = {
-  "": "Dashboard",
-  inventory: "Inventory",
-  orders: "Orders",
-  suppliers: "Suppliers",
-  reports: "Reports",
-  hitl: "HitL",
-  simulation: "Simulation",
+  "":           "Dashboard",
+  inventory:    "Inventory",
+  suppliers:    "Suppliers",
+  reports:      "Reports",
+  simulation:   "Simulation",
 };
 
 export default function Breadcrumb() {
@@ -22,14 +20,17 @@ export default function Breadcrumb() {
     })),
   ];
 
+  // Only render breadcrumb when there's more than the home segment
+  if (crumbs.length <= 1) return null;
+
   return (
-    <nav className="flex items-center gap-1.5 text-sm">
+    <nav className="flex items-center gap-1.5 text-xs mt-0.5">
       {crumbs.map((crumb, index) => {
         const isLast = index === crumbs.length - 1;
         return (
           <span key={crumb.path} className="flex items-center gap-1.5">
             {index > 0 && (
-              <svg className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <svg className="w-3 h-3 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             )}
