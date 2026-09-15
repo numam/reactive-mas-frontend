@@ -33,8 +33,8 @@ export default function Topbar() {
         <button
           onClick={toggle}
           aria-label="Toggle dark mode"
-          className={`cursor-pointer relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
-            dark ? "bg-violet-600" : "bg-gray-200 dark:bg-gray-700"
+          className={`cursor-pointer relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-500 ${
+            dark ? "bg-sage-600" : "bg-gray-200 dark:bg-gray-700"
           }`}
         >
           {/* Track icons */}
@@ -65,7 +65,7 @@ export default function Topbar() {
         </button>
 
         {/* Avatar */}
-        <div className="w-9 h-9 rounded-full bg-linear-to-br from-violet-400 to-purple-600 flex items-center justify-center cursor-pointer">
+        <div className="w-9 h-9 rounded-full bg-linear-to-br from-sage-400 to-sage-600 flex items-center justify-center cursor-pointer">
           <span className="text-white text-xs font-semibold">AD</span>
         </div>
       </div>

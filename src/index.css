@@ -3,6 +3,19 @@
 
 @theme {
   --font-primary: "Poppins", sans-serif;
+
+  /* ── Sage green palette (#87AE73 as 500) ── */
+  --color-sage-50:  #f4f7f2;
+  --color-sage-100: #e8f0e4;
+  --color-sage-200: #d1e3c8;
+  --color-sage-300: #b5d1a8;
+  --color-sage-400: #96bc85;
+  --color-sage-500: #87ae73;
+  --color-sage-600: #6d9460;
+  --color-sage-700: #557449;
+  --color-sage-800: #3e5636;
+  --color-sage-900: #2a3b24;
+  --color-sage-950: #1a2517;
 }
 
 /* width */
@@ -18,7 +31,7 @@
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #d5d5d5;
+  background: #b5d1a8;
   border-radius: 60px;
 }
 

@@ -2,7 +2,7 @@
 export function LoadingSpinner({ message = "Loading..." }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-3">
-      <div className="w-8 h-8 border-2 border-violet-200 dark:border-violet-900 border-t-violet-600 rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-sage-200 dark:border-sage-900 border-t-sage-600 rounded-full animate-spin" />
       <p className="text-sm text-gray-400 dark:text-gray-500">{message}</p>
     </div>
   );
@@ -36,6 +36,6 @@ export function ErrorBanner({ message, onRetry }) {
 /** Inline skeleton block */
 export function Skeleton({ className = "h-6 w-full" }) {
   return (
-    <div className={`rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse ${className}`} />
+    <div className={`rounded-lg bg-sage-100 dark:bg-gray-800 animate-pulse ${className}`} />
   );
 }
